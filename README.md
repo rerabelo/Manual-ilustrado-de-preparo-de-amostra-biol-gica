@@ -1,1 +1,1 @@
-# Manual-ilustrado-de-preparo-de-amostra-biol-gica
+# Manual ilustrado de preparo de amostra biológica
