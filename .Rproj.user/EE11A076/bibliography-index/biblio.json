@@ -1,0 +1,548 @@
+{
+    "sources": [
+        {
+            "URL": "http://yihui.org/knitr/",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                }
+            ],
+            "edition": "2nd",
+            "id": "xie2015",
+            "issued": {
+                "date-parts": [
+                    [
+                        2015
+                    ]
+                ]
+            },
+            "note": "ISBN 978-1498716963",
+            "publisher": "Chapman; Hall/CRC",
+            "publisher-place": "Boca Raton, Florida",
+            "title": "Dynamic documents with R and knitr",
+            "type": "book"
+        },
+        {
+            "DOI": "10.1016/b978-0-12-801238-3.11140-7",
+            "URL": "http://dx.doi.org/10.1016/B978-0-12-801238-3.11140-7",
+            "author": [
+                {
+                    "family": "Tsiapalis",
+                    "given": "Dimitrios"
+                },
+                {
+                    "family": "Ribeiro",
+                    "given": "Sofia"
+                },
+                {
+                    "family": "De Pieri",
+                    "given": "Andrea"
+                },
+                {
+                    "family": "Sallent",
+                    "given": "Ignacio"
+                },
+                {
+                    "family": "Guillaumin",
+                    "given": "Salomé"
+                },
+                {
+                    "family": "Gaspar",
+                    "given": "Diana"
+                },
+                {
+                    "family": "Korntner",
+                    "given": "Stefanie"
+                },
+                {
+                    "family": "Bayon",
+                    "given": "Yves"
+                },
+                {
+                    "family": "Gomes",
+                    "given": "Manuela E."
+                },
+                {
+                    "family": "Reis",
+                    "given": "Rui L."
+                },
+                {
+                    "family": "Zeugolis",
+                    "given": "Dimitrios I."
+                }
+            ],
+            "id": "tsiapalis2019",
+            "issued": {
+                "date-parts": [
+                    [
+                        2019
+                    ]
+                ]
+            },
+            "publisher": "Elsevier",
+            "title": "Designing microenvironments for optimal outcomes in tissue engineering and regenerative medicine: From biopolymers to culturing conditions",
+            "title-short": "Designing microenvironments for optimal outcomes in tissue engineering and regenerative medicine",
+            "type": "chapter"
+        },
+        {
+            "URL": "https://www.R-project.org/",
+            "author": [
+                {
+                    "literal": "R Core Team"
+                }
+            ],
+            "id": "R-base",
+            "issued": {
+                "date-parts": [
+                    [
+                        2020
+                    ]
+                ]
+            },
+            "publisher": "R Foundation for Statistical Computing",
+            "publisher-place": "Vienna, Austria",
+            "title": "R: A language and environment for statistical computing",
+            "title-short": "R",
+            "type": "book"
+        },
+        {
+            "URL": "https://CRAN.R-project.org/package=bookdown",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                }
+            ],
+            "id": "R-bookdown",
+            "issued": {
+                "date-parts": [
+                    [
+                        2021
+                    ]
+                ]
+            },
+            "note": "R package version 0.24",
+            "title": "Bookdown: Authoring books and technical documents with r markdown",
+            "title-short": "Bookdown",
+            "type": "book"
+        },
+        {
+            "URL": "https://yihui.org/knitr/",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                }
+            ],
+            "id": "R-knitr",
+            "issued": {
+                "date-parts": [
+                    [
+                        2021
+                    ]
+                ]
+            },
+            "note": "R package version 1.36",
+            "title": "Knitr: A general-purpose package for dynamic report generation in r",
+            "title-short": "Knitr",
+            "type": "book"
+        },
+        {
+            "URL": "https://CRAN.R-project.org/package=rmarkdown",
+            "author": [
+                {
+                    "family": "Allaire",
+                    "given": "JJ"
+                },
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                },
+                {
+                    "family": "McPherson",
+                    "given": "Jonathan"
+                },
+                {
+                    "family": "Luraschi",
+                    "given": "Javier"
+                },
+                {
+                    "family": "Ushey",
+                    "given": "Kevin"
+                },
+                {
+                    "family": "Atkins",
+                    "given": "Aron"
+                },
+                {
+                    "family": "Wickham",
+                    "given": "Hadley"
+                },
+                {
+                    "family": "Cheng",
+                    "given": "Joe"
+                },
+                {
+                    "family": "Chang",
+                    "given": "Winston"
+                },
+                {
+                    "family": "Iannone",
+                    "given": "Richard"
+                }
+            ],
+            "id": "R-rmarkdown",
+            "issued": {
+                "date-parts": [
+                    [
+                        2021
+                    ]
+                ]
+            },
+            "note": "R package version 2.11",
+            "title": "Rmarkdown: Dynamic documents for r",
+            "title-short": "Rmarkdown",
+            "type": "book"
+        },
+        {
+            "URL": "https://bookdown.org/yihui/bookdown",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                }
+            ],
+            "id": "bookdown2016",
+            "issued": {
+                "date-parts": [
+                    [
+                        2016
+                    ]
+                ]
+            },
+            "note": "ISBN 978-1138700109",
+            "publisher": "Chapman; Hall/CRC",
+            "publisher-place": "Boca Raton, Florida",
+            "title": "Bookdown: Authoring books and technical documents with R markdown",
+            "title-short": "Bookdown",
+            "type": "book"
+        },
+        {
+            "URL": "https://yihui.org/knitr/",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                }
+            ],
+            "edition": "2nd",
+            "id": "knitr2015",
+            "issued": {
+                "date-parts": [
+                    [
+                        2015
+                    ]
+                ]
+            },
+            "note": "ISBN 978-1498716963",
+            "publisher": "Chapman; Hall/CRC",
+            "publisher-place": "Boca Raton, Florida",
+            "title": "Dynamic documents with R and knitr",
+            "type": "book"
+        },
+        {
+            "URL": "http://www.crcpress.com/product/isbn/9781466561595",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                }
+            ],
+            "container-title": "Implementing reproducible computational research",
+            "editor": [
+                {
+                    "family": "Stodden",
+                    "given": "Victoria"
+                },
+                {
+                    "family": "Leisch",
+                    "given": "Friedrich"
+                },
+                {
+                    "family": "Peng",
+                    "given": "Roger D."
+                }
+            ],
+            "id": "knitr2014",
+            "issued": {
+                "date-parts": [
+                    [
+                        2014
+                    ]
+                ]
+            },
+            "note": "ISBN 978-1466561595",
+            "publisher": "Chapman; Hall/CRC",
+            "title": "Knitr: A comprehensive tool for reproducible research in R",
+            "title-short": "Knitr",
+            "type": "chapter"
+        },
+        {
+            "URL": "https://bookdown.org/yihui/rmarkdown",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                },
+                {
+                    "family": "Allaire",
+                    "given": "J. J."
+                },
+                {
+                    "family": "Grolemund",
+                    "given": "Garrett"
+                }
+            ],
+            "id": "rmarkdown2018",
+            "issued": {
+                "date-parts": [
+                    [
+                        2018
+                    ]
+                ]
+            },
+            "note": "ISBN 9781138359338",
+            "publisher": "Chapman; Hall/CRC",
+            "publisher-place": "Boca Raton, Florida",
+            "title": "R markdown: The definitive guide",
+            "title-short": "R markdown",
+            "type": "book"
+        },
+        {
+            "URL": "https://bookdown.org/yihui/rmarkdown-cookbook",
+            "author": [
+                {
+                    "family": "Xie",
+                    "given": "Yihui"
+                },
+                {
+                    "family": "Dervieux",
+                    "given": "Christophe"
+                },
+                {
+                    "family": "Riederer",
+                    "given": "Emily"
+                }
+            ],
+            "id": "rmarkdown2020",
+            "issued": {
+                "date-parts": [
+                    [
+                        2020
+                    ]
+                ]
+            },
+            "note": "ISBN 9780367563837",
+            "publisher": "Chapman; Hall/CRC",
+            "publisher-place": "Boca Raton, Florida",
+            "title": "R markdown cookbook",
+            "type": "book"
+        },
+        {
+            "DOI": "10.1016/B978-0-12-801238-3.11140-7",
+            "ISBN": "9780128136997",
+            "abstract": "Bone marrow mesenchymal stem cells have been extensively used for tissue engineering and regenerative medicine applications due to their ease of isolation and expansion and their ability to differentiate towards various lineages of mesodermal origin. Despite these properties, their clinical potential is often hampered by the simplicity of the in vitro environment and its inability to resemble the complex in vivo niche. Herein, different microenvironmental cues (e.g. surface topography, substrate stiffness, mechanical stimulation, oxygen tension and coculture systems) that have been utilized to enhance the therapeutic efficacy of bone marrow mesenchymal stem cells are discussed.",
+            "author": [
+                {
+                    "family": "Tsiapalis",
+                    "given": "Dimitrios"
+                },
+                {
+                    "family": "Ribeiro",
+                    "given": "Sofia"
+                },
+                {
+                    "family": "Pieri",
+                    "given": "Andrea De"
+                },
+                {
+                    "family": "Sallent",
+                    "given": "Ignacio"
+                },
+                {
+                    "family": "Guillaumin",
+                    "given": "Salomé"
+                },
+                {
+                    "family": "Gaspar",
+                    "given": "Diana"
+                },
+                {
+                    "family": "Korntner",
+                    "given": "Stefanie"
+                },
+                {
+                    "family": "Bayon",
+                    "given": "Yves"
+                },
+                {
+                    "family": "Gomes",
+                    "given": "Manuela E."
+                },
+                {
+                    "family": "Reis",
+                    "given": "Rui L."
+                },
+                {
+                    "family": "Zeugolis",
+                    "given": "Dimitrios I."
+                }
+            ],
+            "container-title": "Encyclopedia of Tissue Engineering and Regenerative Medicine",
+            "id": "Tsiapalis2019",
+            "issued": {
+                "date-parts": [
+                    [
+                        2019,
+                        1
+                    ]
+                ]
+            },
+            "keyword": "Bone marrow mesenchymal stem cells,Coculture systems,Low oxygen tension,Mechanical loading,Microenvironmental cues,Substrate stiffness,Surface topography,Tissue engineering",
+            "page": "119-130",
+            "publisher": "Academic Press",
+            "title": "Designing microenvironments for optimal outcomes in tissue engineering and regenerative medicine: From biopolymers to culturing conditions",
+            "title-short": "Designing microenvironments for optimal outcomes in tissue engineering and regenerative medicine",
+            "type": "article-journal",
+            "volume": "1-3"
+        },
+        {
+            "DOI": "10.1007/978-3-319-14394-1",
+            "ISBN": "978-3-319-14393-4",
+            "URL": "https://www.taylorfrancis.com/books/9781420050530/chapters/10.1201/NOE0750309608-50 http://link.springer.com/10.1007/978-3-319-14394-1",
+            "author": [
+                {
+                    "family": "Jaeschke",
+                    "given": "Eberhard J"
+                },
+                {
+                    "family": "Hastings",
+                    "given": "Jerome B"
+                }
+            ],
+            "editor": [
+                {
+                    "family": "Jaeschke",
+                    "given": "Eberhard J."
+                },
+                {
+                    "family": "Khan",
+                    "given": "Shaukat"
+                },
+                {
+                    "family": "Schneider",
+                    "given": "Jochen R."
+                },
+                {
+                    "family": "Hastings",
+                    "given": "Jerome B."
+                }
+            ],
+            "id": "Jaeschke2021",
+            "issued": {
+                "date-parts": [
+                    [
+                        2016,
+                        12
+                    ]
+                ]
+            },
+            "page": "1059-1079",
+            "publisher": "Springer International Publishing",
+            "publisher-place": "Cham",
+            "title": "Synchrotron Light Sources and Free-Electron Lasers",
+            "type": "book"
+        },
+        {
+            "DOI": "10.3791/52370",
+            "ISSN": "1940-087X",
+            "PMID": "25867691",
+            "URL": "/pmc/articles/PMC4401319/ /pmc/articles/PMC4401319/?report=abstract https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4401319/ http://www.jove.com/video/52370/preparing-adherent-cells-for-x-ray-fluorescence-imaging-chemical",
+            "abstract": "X-ray fluorescence imaging allows us to non-destructively measure the spatial distribution and concentration of multiple elements simultaneously over large or small sample areas. It has been applied in many areas of science, including materials science, geoscience, studying works of cultural heritage, and in chemical biology. In the case of chemical biology, for example, visualizing the metal distributions within cells allows us to study both naturally-occurring metal ions in the cells, as well as exogenously-introduced metals such as drugs and nanoparticles. Due to the fully hydrated nature of nearly all biological samples, cryo-fixation followed by imaging under cryogenic temperature represents the ideal imaging modality currently available. However, under the circumstances that such a combination is not easily accessible or practical, aldehyde based chemical fixation remains useful and sometimes inevitable. This article describes in as much detail as possible in the preparation of adherent mammalian cells by chemical fixation for X-ray fluorescent imaging.",
+            "author": [
+                {
+                    "family": "Finney",
+                    "given": "Lydia A."
+                },
+                {
+                    "family": "Jin",
+                    "given": "Qiaoling"
+                }
+            ],
+            "container-title": "Journal of Visualized Experiments",
+            "id": "Finney2015",
+            "issue": "97",
+            "issued": {
+                "date-parts": [
+                    [
+                        2015,
+                        3
+                    ]
+                ]
+            },
+            "keyword": "Chemical biology,Chemistry,Fluorescence,Imaging,Issue 97,Metals,Microscopy,Synchrotron,X-ray",
+            "page": "52370",
+            "publisher": "MyJoVE Corporation",
+            "title": "Preparing Adherent Cells for X-ray Fluorescence Imaging by Chemical Fixation",
+            "type": "article-journal",
+            "volume": "2015"
+        },
+        {
+            "DOI": "10.1146/annurev.physiol.70.113006.100434",
+            "ISSN": "0066-4278",
+            "PMID": "18271748",
+            "URL": "https://www.annualreviews.org/doi/abs/10.1146/annurev.physiol.70.113006.100434 https://www.annualreviews.org/doi/10.1146/annurev.physiol.70.113006.100434 http://www.ncbi.nlm.nih.gov/pubmed/18271748",
+            "abstract": "Studies of the physiology and biomechanics of small ( approximately 1 cm) organisms are often limited by the inability to see inside the animal during a behavior or process of interest and by a lack of three-dimensional morphology at the submillimeter scale. These constraints can be overcome by an imaging probe that has sensitivity to soft tissue, the ability to penetrate opaque surfaces, and high spatial and temporal resolution. Synchrotron X-ray imaging has been successfully used to visualize millimeter-centimeter-sized organisms with micrometer-range spatial resolutions in fixed and living specimens. Synchrotron imaging of small organisms has been the key to recent novel insights into structure and function, particularly in the area of respiratory physiology and function of insects. X-ray imaging has been effectively used to examine the morphology of tracheal systems, the mechanisms of tracheal and air sac compression in insects, and the function of both chewing and sucking mouthparts in insects. Synchrotron X-ray imaging provides an exciting new window into the internal workings of small animals, with future promise to contribute to a range of physiological and biomechanical questions in comparative biology.",
+            "author": [
+                {
+                    "family": "Westneat",
+                    "given": "Mark W."
+                },
+                {
+                    "family": "Socha",
+                    "given": "John J."
+                },
+                {
+                    "family": "Lee",
+                    "given": "Wah-Keat"
+                }
+            ],
+            "container-title": "Annual review of physiology",
+            "id": "Westneat2008",
+            "issue": "1",
+            "issued": {
+                "date-parts": [
+                    [
+                        2008,
+                        3
+                    ]
+                ]
+            },
+            "keyword": "CT,biomechanics,feeding,imaging,insects,morphology,respiration",
+            "page": "119-42",
+            "publisher": "Annual Reviews",
+            "title": "Advances in biological structure, function, and physiology using synchrotron X-ray imaging*.",
+            "type": "article-journal",
+            "volume": "70"
+        }
+    ],
+    "project_biblios": [
+        "book.bib",
+        "packages.bib",
+        "Tsiapalis2019.bib",
+        "Jaeschke2021.bib",
+        "Finney2015.bib",
+        "Westneat2008.bib"
+    ]
+}

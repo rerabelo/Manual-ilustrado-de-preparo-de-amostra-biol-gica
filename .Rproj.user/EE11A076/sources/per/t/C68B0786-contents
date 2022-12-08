@@ -1,0 +1,2981 @@
+---
+title: "Rationale Behind Synthesis Parameters to Predict MSNs size and aggregation"
+author: "SCHNEID, A.C., RABELO, R.S., ALBUQUERQUE, L.J.C., CARDOSO, M.B."
+output: 
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: false
+    lightbox: true
+    gallery: false
+    highlight: tango
+    toc_float: 
+      collapsed: yes
+      smooth_scroll: yes
+---
+
+
+# 1. Contextualization
+
+<div style="text-align: justify"> Insuring reproducibility and predictability of size and colloidal state of mesoporous silica nanoparticles (MSNs) is still the greatest challenge faced by the scientific community in the nanomedicine field. The lack of deep understanding on how the synthesis parameters can impact and also be used to tune MSNs' final properties are some of the reasons why so many reports in the literature are not reproducible or their production still did not reach industrial stage. In this context, the first step towards the easy production of MSNs using a validated method of prediction of size and colloidal stability. This document is an extension of the article entitled "Rationale behind synthesis parameters to predict mesoporous silica nanoparticles' size and aggregation state". Herein, we detail the code used in data analysis also showing the graphs and statistic results obtained for each model explored in this work. A support material is available in case you need support to understand how to generate and organize the data to run the tool, or even how to run the code in R. Also, you can find in the support material session links that provide to you the original (untreated) data obtained from DLS and electronic microscopy, as well as the conditions used in the synthesis of each sample. </div>
+
+# 2. Installing and loading the packages
+
+<div style="text-align: justify"> The installation of the packages committed below is only necessary for users who do not have them installed yet, and can be done via code (after removal of the committee) or individually, in RStudio. </div>
+```{r}
+#p <- c("rsm", "olsrr", "caret", "car", "pls", "FactoMineR", "factoextra", "corrplot", "ggplot2", "GGally", "ggpubr", "openxlsx", "Rcpp","knitr","kableExtra", "htmltools", "tinytex", "fastmap", "rmdformats", "rgl", "tsne", "vegan")
+#install.packages(p)
+```
+
+<div style="text-align: justify"> Below, the packages are being loaded by category, the first two loaded packages make it possible to build the model and perform statistical tests. In sequence, we have the graphic packages, those that facilitate the export of data and, finally, those that allow the creation of this report in html. </div>
+
+```{r, message = FALSE,  warning = FALSE}
+# Statistical packages
+library(rsm)         # Surface response methodology package
+library(olsrr)       # Breusch-Pagan test
+library(caret)       # Validation
+library(car)
+
+# Multivariate analysis
+library(FactoMineR)
+library(factoextra)
+library(pls)
+library(corrplot)
+
+# Graphic packages
+library(ggplot2)     
+library(GGally)
+library(ggpubr)
+
+# Data export packages
+library(openxlsx)    
+library(Rcpp)  
+
+# Report building packages
+library(knitr)
+library(kableExtra)
+library(htmltools)
+library(tinytex)
+library(fastmap)
+library(rmdformats)
+
+#library(EBImage)
+library(rgl)        # 3D graphics package
+library(tsne)
+library(vegan)
+```
+
+# 3. Experimental design
+
+## 3.1 Central composite rotational design (CCRD) {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this study we used a central composite rotational design (CCRD) due to the possibility of sequential and economic experimentation, good variance and prediction properties.The experimental design applied was a CCRD 2^3, presenting four axial points and three central points. The pH, temperature and [TEOS]/[CTAB] ratio were defined as the factors x1, x2 and x3, respectively, chosen due to their known impact on MSNs formation. The variation of each factor was: pH (x1) - central point at pH 10, varying from 8.8 to 11.2; temperature (x2) - central point at 80°C, varying from 68.1 to 91.9 °C; [TEOS]/[CTAB] ratio (x3) - central point at 1.4, varying from 0.69 to 2.11. The CCRD can be also presented in its coded form, where the central point is zero, and the variation occurs from the higher level (+1) to the lower level (-1). The coded points can be decoded as follows:</div> 
+<br>
+$x1 = (pH - 0.77)/0.15$ 
+
+$x2 = (Temperature - 15.5)/6.5$ 
+
+$x3 = ([TEOS]/[CTAB] - 8.5)/3.5$
+
+<div style="text-align: justify"> where the values of 1.2, 11.9 and 0.71 corresponds to the total variation observed from the central point to the higher or lower level.</div>
+
+<div style="text-align: justify"> As these nanoparticles properties can also be susceptible to other several synthesis parameters we kept as constants: reaction time (2 h), reaction volume (85 mL), stirring speed (1000 rpm), solvent (water), catalyst (NaOH), silica precursor (TEOS), TEOS:NaOH ratio (1:1) and CTAB concentration (7.76 g/L). After the MSNs syntheses, their size and colloidal state were evaluated using their median (obtained by electronic microscopy images), as the response to represent size, also the aggregation factor (AggF) and PDI width (obtained by DLS data) were used as responses of aggregation. All these responses were applied to the same CCRD matrix, allowing to evaluate the behavior of each response in the same experimental block.</div>
+
+### Median (nm)
+
+```{r}
+# Experimental design 
+ccd1 <- ccd(basis = ~ x1 + x2 + x3,      # Creates the Central Composite Rotational Design (CCRD)
+            n0 = c(0,3),                 # zero central points in the factorial session + three central points in the axial session
+            alpha = "rotatable",         # Central Composite Rotational Design (CCRD)
+            randomize = F,                        # False - standard order design
+            oneblock = T,                         # True - one block design
+           coding = list(x1 ~ (pH - 0.77)/0.15,             # Decode pH values
+                          x2 ~ (temp - 15.5)/6.5,          # Decode temperature values in Celsius
+                          x3 ~ (TEOSCTAB - 8.5)/3.5))    # Decode [TEOS]/[CTAB] ratio values
+```
+```
+
+### Aggregation factor
+
+```{r}
+# Experimental design  
+ccd2 <- ccd(basis = ~ x1 + x2 + x3,      # Creates the Central Composite Rotational Design (CCRD)
+            n0 = c(0,3),                 # zero central points in the factorial session + three central points in the axial session
+            alpha = "rotatable",         # Central Composite Rotational Design (CCRD)
+            randomize = F,                        # False - standard order design
+            oneblock = T,                         # True - one block design 
+            coding = list(x1 ~ (pH - 0.77)/0.15,             # Decode pH values
+                          x2 ~ (temp - 15.5)/6.5,          # Decode temperature values in Celsius
+                          x3 ~ (TEOSCTAB - 8.5)/3.5))    # Decode [TEOS]/[CTAB] ratio values
+```
+```
+
+### PDI width
+
+```{r}
+# Experimental design 
+ccd3 <- ccd(basis = ~ x1 + x2 + x3,      # Creates the Central Composite Rotational Design (CCRD)
+            n0 = c(0,3),                 # zero central points in the factorial session + three central points in the axial session
+            alpha = "rotatable",         # Central Composite Rotational Design (CCRD)
+            randomize = F,                        # False - standard order design
+            oneblock = T,                         # True - one block design 
+           coding = list(x1 ~ (pH - 0.77)/0.15,             # Decode pH values
+                          x2 ~ (temp - 15.5)/6.5,          # Decode temperature values in Celsius
+                          x3 ~ (TEOSCTAB - 8.5)/3.5))    # Decode [TEOS]/[CTAB] ratio values
+```
+```
+
+## 3.2 Experimental data {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The median was used to evaluate the impact of the studied synthesis parameters on MSNs' size. The median data was obtained through electronic microscopy images (Scanning Electronic Microscopy and Scanning and Transmission Electronic Microscopy) from which at least 250 particles were analyzed in each sample, guaranteeing a population statistically significant. For samples that presented a broad size distribution it was collected a larger population, while for samples that did not present formation of well defined particles (e.g. M02 and M10 of this study) just spherical like structures with at least two faces delimited were considered in the counting process. In these cases, the analyzed population had less than 250 items.</div>
+
+```{r}
+ymed <- c(95.56, 97.04,	96.4,	85.06,	98.13,	98.16,	101.38, 84.8,	99.22,	95.85,	96.41,	93.94,	100.27,	86.64,	99.71,	96.71,	100.66)
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The Aggregation Factor (AggF) is a primary response to express aggregation of the MSNs systems. It is defined as AggF = (Zave - PN) x 100/PN, where Zave is the average value of particles' hydrodynamic diameter obtained by Intensity, while PN is the value of peak obtained by number in the DLS analysis. AggF shows how much the increment on MSNs hydrodynamic size (Zave - PN) impacts on the final particle size. </div>
+
+```{r}
+yagg <- c(97.89,	99.9,	100.2,	90.78,	97.36,	98.98,	97.78,	85.07,	96.68,	99.78,	96.03,	95.3,	98.65,	86.89,	98.7,	98.32,	96.86)
+````
+
+### PDI width
+
+<div style="text-align: justify"> The PDI width (expressed just as PDI in this report) is a secondary response related to particle's aggregation. It represents the polydispersity index of the system considering one overall average size and one overall average polydispersity. This response was chosen once it can indicate the presence of multiple populations, unwanted feature either for aggregated and non-aggregated particles.</div>
+
+```{r} 
+# PDI width
+ypdi <- c(96.62,	97.89,	97.38,	94.35,	98.13,	99.12, 100.21,	86.08,	99.23,	97.86,	100.42,	97.8,	98.76,	93.26,	98.84,	97.18,	96.73)
+```
+
+### PDI width (2)
+
+<div style="text-align: justify"> The PDI width (expressed just as PDI in this report) is a secondary response related to particle's aggregation. It represents the polydispersity index of the system considering one overall average size and one overall average polydispersity. This response was chosen once it can indicate the presence of multiple populations, unwanted feature either for aggregated and non-aggregated particles.</div>
+
+```{r} 
+# PDI width(2)
+##ypdi <- c(-0.14479084, -0.13963648, -0.58283226, 0.33078001, -0.12594921, -0.26823777, -0.0656927, 0.8263895, -0.1763965, -0.17492459, -0.4510182, -0.28068116, -0.46745247, 0.94048685, -0.1257014, -0.29633385, -0.10400147)
+```
+
+## 3.3 Dataframe structuring {.tabset .tabset-fade}
+
+<div style="text-align: justify"> The data must be organized in separated columns, originating a table containing the CCRD points (coded and decoded), as x values, and the desired responses as Y values. In this session we show the CCRD in its decoded version, allowing the reader to check the real values used for each parameter in the MSNs' synthesis.</div>
+
+### Median (nm)
+```{r}
+# Inserting the response to the experimental design
+ccd1$ymed <- ymed
+
+# View of the data bank (decoded)
+ccd1
+```
+
+### Aggregation Factor
+```{r}
+# Inserting the response to the experimental design
+ccd2$yagg <- yagg
+
+# View of the data bank (decoded)
+ccd2
+```
+
+### PDI width
+```{r}
+# Inserting the response to the experimental design
+ccd3$ypdi <- ypdi
+
+# View of the data bank (decoded)
+ccd3
+```
+
+## 3.4 Coded dataframe {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session we show the CCRD in its coded version.</div>
+
+### Median (nm)
+```{r}
+# View of the data bank (coded)
+print.data.frame(head(ccd1, 17))
+```
+
+### Aggregation Factor
+```{r}
+# View of the data bank (coded)
+print.data.frame(head(ccd2, 17))
+```
+
+### PDI width
+```{r}
+# View of the data bank (coded)
+print.data.frame(head(ccd3, 17))
+```
+
+## 3.5 Coded dataframe (2D visualization) {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session the experimental points (factorial, axial and central) are represented in a 2D plot, combining each pair of factors (x1:x2; x1:x3; x2:x3).</div>
+
+### Median (nm)
+```{r}
+# Data bank plot (coded)
+plot(ccd1 [,c(-1,-2,-6)])
+```
+
+### Aggregation Factor
+```{r}
+# Data bank plot (coded)
+plot(ccd2 [,c(-1,-2,-6)])
+```
+
+### PDI width
+```{r}
+# Data bank plot (coded)
+plot(ccd3 [,c(-1,-2,-6)])
+```
+
+# 4. Modeling
+
+<div style="text-align: justify"> Modeling is a method used to find the cause-and-effect relationship between each factor studied and the response of interest. This method is widely used to optimize processes in research laboratories and industrial production line. The statistical significance of single factors and their interactions can define the model that best represents the phenomenon.Hence, it is of utmost importance to test different modeling approaches and analyze which one presents the most resealable fitting, showing high correlation coefficients and low values of sum of squares total. In this session we present different models applied to the data obtained for the three studied responses (median, AggF and PDI width). </div>  
+
+## 4.1 Modeling via lm -> Model 1 {.tabset .tabset-fade}
+
+<div style="text-align: justify"> The model lm1 was the first approach used in this study. This is a complete second order model, which consider the contribution of all factors in first (x1, x2 and x3) and second order (x1^2,x2^2 and x3^2), as well as the interaction between the factors (x1:x2, x1:x3 and x2:x3). This model provides a coefficient matrix, correlation coefficient (R^2), adjusted correlation coefficient (adjusted R^2) and a simplified ANOVA test.</div>
+
+### Median (nm)
+
+<div style="text-align: justify"> This model applied to median showed that the variance of x1, x2 and x3 are significant in first and second order, indicating the high dependence of the model on these terms. Also, the present model resulted in a R^2 and a adjusted R^2 values of 0.9252 and 0.829, respectively. </div> 
+
+```{r}
+## Modeling
+
+## Model using lm - Second Order Model (SO, second order)
+lm1 <- lm(ymed ~ SO(x1, x2, x3), data = ccd1)  
+summary(lm1)
+
+## ANOVA
+anova1 <- aov(lm1)
+summary(anova1)
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The lm model applied to AggF data is highly dependent on x3 ([TEOS]/[CTAB] ratio), in both first and second order, and on the interaction between x1 and x3 (x1:x3 - pH:[TEOS]/[CTAB] ratio), considering the significant variation of these terms. In addition, considering the complex nature of aggregation phenomenon, this model obtained for AggF presents satisfactory values of R^2 and adjusted R^2, which are 0.8614 and 0.6832, respectively.</div>
+
+```{r}
+## Modeling
+
+## Model using lm - Second Order Model (SO, second order)
+lm10 <- lm(yagg ~ SO(x1, x2, x3), data = ccd2)  
+summary(lm10)
+
+## ANOVA
+anova10 <- aov(lm10)
+summary(anova10)
+```
+
+### PDI width
+
+<div style="text-align: justify"> This model when applied to PDI width data shows significant variance for x1 and x3, in first order and their interaction, as well as for x3 in second order, consequently, the model presents great dependence on these terms.  Also, this model present the satisfactory R^2 and adjusted R^2 values of 0.8635 and 0.6879, respectively.</div>
+
+```{r}
+## Modeling
+
+## Model using lm - Second Order Model (SO, second order)
+lm100 <- lm(ypdi ~ SO(x1, x2, x3), data = ccd3)  
+summary(lm100)
+
+## ANOVA
+anova100 <- aov(lm100)
+summary(anova100)
+```
+
+## 4.2 Model reduction via Akaike information criterion (AIC) -> Model 2 {.tabset .tabset-fade}
+
+<div style="text-align: justify"> The use of the AIC method aims to simplify the model with minimum loss in its performance. So, this method compares different simplifications of the model, attributing to each one an AIC value that quantifies the amount of information loss in the process. Thus, the preferable simplified model is the one presenting the lower AIC value.</div>  
+
+### Median (nm)
+
+<div style="text-align: justify"> When applied to the median data, the model containing all terms of first order, interaction and second order presented the lower AIC value, indicating that each term contributes with the performance of this model (also observed for the lm model). Nevertheless, the model showed high dependence on the terms of first and second order, also, the values of R^2 and adjusted R^2 obtained were 0.9252 and 0.829, respectively. </div> 
+
+```{r}
+# Akaike information criterion (AIC) - the lower the better
+# Reducing the model by step (considering the "n" of terms (r))
+lm_red1 <- step(lm1, direction = "both")
+summary(lm_red1)
+
+## ANOVA
+anova3 <- aov(lm_red1)
+summary(anova3)
+```
+### Aggregation factor
+
+<div style="text-align: justify"> The AIC method indicated that the model containing all terms of first order, interaction and second order was less detrimental to the model performance, as previously observed in lm model. Herein, the model showed high dependence on x3 ([TEOS]/[CTAB] ratio) terms of first and second order, as well as on the interaction between x1 and x3 (x1:x3). This model presented values of R^2 and adjusted R^2 obtained were 0.8614 and 0.6832, respectively. </div>
+
+```{r}
+# Akaike information criterion (AIC) - the lower the better
+# Reducing the model by step (considering the "n" of terms (r))
+lm_red10 <- step(lm10, direction = "both")
+summary(lm_red10)
+
+## ANOVA
+anova30 <- aov(lm_red10)
+summary(anova30)
+```
+
+### PDI width
+
+<div style="text-align: justify"> When the AIC method was applied to PDI width data it indicated that the model containing all terms (first order, interaction and second order) presented the lower AIC value, suggesting that every term contributes to the overall performance of this model. As previously observed in lm model, the terms x1 and x3 in first order, x3 in second order and the interaction x1:x3 are statistically significant. Furthermore, the values of the correlation coefficients R^2 and adjusted R^2 were 0.8635 and 0.6879, respectively. </div>
+
+```{r}
+# Akaike information criterion (AIC) - the lower the better
+# Reducing the model by step (considering the "n" of terms (r))
+lm_red100 <- step(lm100, direction = "both")
+summary(lm_red100)
+
+## ANOVA
+anova300 <- aov(lm_red100)
+summary(anova300)
+```
+
+## 4.3 Modeling via rsm -> Model 3 {.tabset .tabset-fade}
+
+<div style="text-align: justify"> This method provides a thorough evaluation of a model containing terms of first order, interaction and second order. Herein, the model shows the matrix of coefficients, ANOVA tests, and informs the stationary points, lack of fit and the eigen values.</div>
+
+### Median (nm)
+
+<div style="text-align: justify"> This complete model when applied to median data presents high dependence of this model on the first and second order terms, as shown previously for lm and AIC (session 4.1 and 4.2). Also, the values of the correlation coefficients R^2 and adjusted R^2 obtained for this model were 0.9252 and 0.829, respectively. Furthermore, this method shows that the model does not have lack of fit, and the all three eigen values are negative indicating that the model presents a point of maximum, i.e., it represents a negative parabola. Finally, the stationary points observed for the median model is x1 = -0.34, x2 = 0.45 and x3 = - 0.30, for coded design, and pH = 9.59, temperature = 85.41 and [TEOS]/[CTAB] = 1.19, for decoded version.</div>
+
+```{r}
+## Model using rsm - Second Order Model (SO, second order) - a more complete analysis, including lack of fit tests and stationary points
+rsm1 <- rsm(ymed ~ SO(x1, x2, x3), data = ccd1)
+summary(rsm1)
+
+## ANOVA 
+anova2 <- aov(rsm1)
+summary(anova2)
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> This model applied to AggF shows that the terms x3 in first and second order, as well as the interaction of x1 and x3 are significant for this model, as previously mentioned in the session 4.1 and 4.2 for lm and AIC. The values of R^2 and adjusted R^2 obtained for this model were 0.8614 and 0.6832, respectively. In addition, this method showed that the lack of fit is not significant in the AggF model. The eigen values provide an important information, they indicate that the function represents a saddle point, therefore the stationary points informed for the model are not maximizing or minimizing the response. In other words, the stationary points here do not represent a minimum or a maximum in the model.</div>
+
+```{r}
+## Model using rsm - Second Order Model (SO, second order) - a more complete analysis, including lack of fit tests and stationary points
+rsm10 <- rsm(yagg ~ SO(x1, x2, x3), data = ccd2)
+summary(rsm10)
+
+## ANOVA 
+anova20 <- aov(rsm10)
+summary(anova20)
+```
+
+### PDI width
+
+<div style="text-align: justify"> The complete model for PDI width data presents a high dependence on the terms x1 and x3 in first order, x3 in second order and on the interaction term of x1:x3, as previously mentioned in the session 4.1 and 4.2 for lm and AIC. In this model the values of R^2 and adjusted R^2 obtained were 0.8635 and 0.6879, respectively, also it does not present lack of fit. Similarly to the AggF model, the eigen values obtained for the PDI width model also indicate that the function assumes a saddle shape in the studied area, hence, the stationary points presented here do not represent neither a minimum nor a maximum in the model.</div>
+
+```{r}
+##  Model using rsm - Second Order Model (SO, second order) - a more complete analysis, including lack of fit tests and stationary points
+rsm100 <- rsm(ypdi ~ SO(x1, x2, x3), data = ccd3)
+summary(rsm100)
+
+## ANOVA 
+anova200 <- aov(rsm100)
+summary(anova200)
+```
+
+## 4.4 Manual model reduction -> Model 4 {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this method we manually disregarded the terms that did not present significance in the previous models of median, AggF and PDI width, hence, simplifying the models. Herein, we also obtained matrix of coefficients, ANOVA results, lack of fit results, stationary points and eigen values. </div>  
+
+### Median (nm)
+
+<div style="text-align: justify"> In this reduced model for median all included terms are significant, resulting in correlation coefficients R^2 and adjusted R^2 of 0.9197 and 0.8573, where the last one was improved. The stationary points obtained were x1 = -0.36, x2 = 0.47 and x3 = -0.28, for coded block, while for the decoded version the values were pH = 9.57, temperature = 85.57 and [TEOS]/[CTAB] = 1.20. Similarly to the complete model presented in the session 4.3, the function in this experimental region is a negative parabola, where the stationary point represents a maximum point in the model.</div>
+
+```{r}
+## Reduced model - First order model (FO, First order) 
+rsm2 <- rsm(ymed ~ FO(x1,x2,x3) + TWI(x1,x3) + PQ(x1,x2,x3), data = ccd1)           
+summary(rsm2)
+
+## ANOVA
+anova4 <- aov(rsm2)
+summary(anova4)
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> In this reduced model for AggF were disregarded, resulting in correlation coefficients values R^2 of 0.8169 and adjusted R^2 of 0.7559, the last one increased considerably. Showing the similar behavior than the complete model, here the eigen values also indicate a saddle shape assumed by the studied response. The stationary point of this model was not provided once all terms related to x2 (temperature) were removed from it.</div>
+
+```{r}
+## Reduced model - First order model (FO, First order) 
+rsm20 <- rsm(yagg ~ FO(x1, x3) + TWI(x1, x3) + PQ(x3), data = ccd2)       
+summary(rsm20)
+
+## ANOVA
+anova40 <- aov(rsm20)
+summary(anova40)
+```
+
+### PDI width
+
+<div style="text-align: justify"> In the reduced model obtained for PDI width the terms non-significant were removed, resulting in a model ruled by x1 and x3 in first order, x3 in second order and by the x1:x3 interaction. For the present model the correlation coefficient R^2 and adjusted R^2 were 0.8534 and 0.8045, respectively. Similarly to the other models from this session, the adjusted R^2 greatly improved. As observed for the complete model showed in the session 4.3, here the eigen values also indicates a saddle region, which does not presents a point of maximization nor minimization. Regarding the stationary point, it is not provided in this model since there is no term related to x2 (temperature) in its formula.</div>
+
+```{r}
+## Reduced model - First order model (FO, First order) 
+rsm200 <- rsm(ypdi ~ FO(x1,x3) + TWI(x1,x3) + PQ(x3), data = ccd3)          
+summary(rsm200)
+
+## ANOVA
+anova400 <- aov(rsm200)
+summary(anova400)
+```
+## 4.5 Comparison between models  {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session we compare the models obtained for each response, aiming to show how the models used in this work were elected. Herein, the best model is the one presenting the lower sum of squares.</div>
+
+### Median (nm)
+
+<div style="text-align: justify"> Comparing the four models tested for median we noticed that the reduced model presents the higher sum of squares, and even though it led to a slight enhance in the adjusted R^2, the complete model (containing first order, interaction and second order terms) is the one that better represents the median response, confirming the result obtained in the AIC method. </div>
+
+```{r}
+# Model comparison
+anova(lm1, lm_red1, rsm1, rsm2)  
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The comparison of the four models obtained for AggF shows that the model containing terms (first order, interaction and second order) has the lower sum of squares value, indicating that the non-significant terms also contribute to the models performance, corroborating with the AIC method. Then, the complete model was chosen over the reduced model even though the last one improved the adjusted R^2.</div>
+
+```{r}
+# Model comparison
+anova(lm10, lm_red10, rsm10, rsm20)  
+```
+
+### PDI width
+
+<div style="text-align: justify"> The analysis of the four models tested for PDI width shows that the reduced model presents the higher sum of squares, even though it provides an enhanced adjusted R^2. Therefore, the complete model represents better the response, confirming the results obtained in the AIC method.</div>
+
+```{r}
+# Model comparison
+anova(lm100, lm_red100, rsm100, rsm200)  
+```
+## 4.6 Confidence interval for coefficients   {.tabset .tabset-fade}
+
+### Median (nm)
+```{r}
+# Confidence interval
+confint(rsm1)
+```
+
+### Aggregation factor
+```{r}
+# Confidence interval
+confint(rsm10)
+```
+
+### PDI width
+```{r}
+# Confidence interval
+confint(rsm100)
+```
+
+## 4.7 Verification of model assumptions
+
+<div style="text-align: justify"> Several assumptions are made during the linear regression used in the modeling process. At this point we have to evaluate if the models' assumptions are true. The assumptions made for linear regression are: (i) linearity: the relationship between X and the mean of Y has to be linear; (ii) homoscedasticity: the residual variance is the same for any X value; (iii) independence: the observations are independent from each other; and (iv) normality: for any given value of X, Y is normally distributed. The evaluation of these assumptions are made using Shapiro-Wilk tests (normality), residuals vs fitted values plot (linearity and homoscedasticity), Q-Q plot (normality), scale-location (homoscedasticity) and residuals vs leverage plot (tests the influence of each sample on the regression). In this session, the presented assumptions are been tested.</div>
+
+### 4.7.1 Shapiro-Wilk test (Normality test) {.tabset .tabset-fade}
+
+<div style="text-align: justify"> The Shapiro-Wilk test evaluates the null hypothesis that a sample y is part of a normally distributed population. Thus, if the p value obtained is lower than the alpha value tested, the null hypothesis is rejected, indicating that the analyzed population does not present a normal distribution. In this study the alpha value used is 0.05.</div>
+
+#### Median(nm)
+
+<div style="text-align: justify"> The Shapiro-Wilk test resulted in the acceptance of the null hypothesis, indicating the normality of the median data. In the residual vs fitted values plot the median values do not present significant variation, as observed the residual (red line) is close to zero. The Q-Q plot shows that the majority of the residual points are lying onto the 45° line, confirming the normality hypothesis accepted in the Shapiro-Wilk test. In the plot of scale-location the homoscedasticity is assumed when there is no apparent pattern in the residual points, thus, as the residual points in the plot are randomly distributed it suggests that the median data is homoscedastic. Finally, the residuals vs leverage shows that the samples M03 and M12 can affect the accuracy of the regression, once they present Cook's distance higher than 0.5. However, these points are important to the overall understanding of the phenomenon, hence, they were kept in the data.</div>
+
+```{r}
+## Assumptions
+shapiro.test(rsm1$residuals)
+par(mfrow = c(2,2))  # mfrow=c(nrows, ncols)
+plot(rsm1)
+```
+
+#### Aggregation factor
+
+<div style="text-align: justify"> For the AggF model the null hypothesis of the Shapiro-Wilk test was accepted, suggesting that the AggF values are part of a normal distribution. The residual vs fitted values plot showed a worse scenario compared to the median model, but the residual line is still close to zero. The Q-Q plot confirms the normality assumption accepted by the Shapiro-Wilk test, since the residual points are lying close to the 45° line. The plot of scale-location shows that the residual points are randomly distributed, indicating that the model can be considered homoscedastic. Finally, in the residuals vs leverage the samples M07 and M09 can affect the accuracy of the regression, once they present Cook's distance higher than 0.5. However, these points are important to the overall understanding of the phenomenon, hence, they were kept in the data.</div>
+
+```{r}
+## Assumptions
+shapiro.test(rsm10$residuals)
+par(mfrow = c(2,2))  # mfrow=c(nrows, ncols)
+plot(rsm10)
+```
+
+#### PDI width
+
+<div style="text-align: justify"> The test of Shapiro-Wilk shows a p-value higher than the alpha level considered in this test (0.05), resulting in the acceptance of the null hypothesis that the values of PDI width are part of a normal distribution. Similarly to the result obtained for the AggF model, the residual vs fitted values plot showed a larger distribution of PDI width values compared to the residual line, however, the residual line is still close to zero. In the Q-Q plot the normality of the data is confirmed once the residual points lied close to the 45° line. The plot of scale-location shows some pattern in the distribution of the residual points, hence, this result suggests the lack of homoscedasticity. Finally, in the residuals vs leverage the samples M05 and M09 can influence  in the accuracy of the regression in this model, since they present Cook's distance higher than 0.5. However, these points are important to the overall understanding of the phenomenon, hence, they were kept in the data.</div>
+
+```{r}
+## Assumptions
+# Normality for the model rsm
+shapiro.test(rsm100$residuals)
+par(mfrow = c(2,2))  # mfrow=c(nrows, ncols)
+plot(rsm100)
+```
+
+### 4.7.2 Breusch-Pagan test (Heteroskedasticity)  {.tabset .tabset-fade}
+
+<div style="text-align: justify"> The Breusch-Pagan test evaluates if the variance of the errors from a regression is dependent on the values of the independent variables. This test is based on chi-squared tests and when the p-value is bellow 0.05 the null hypothesis (the model is not heteroskedastic) is rejected and the model is considered heteroskedastic.</div>
+
+#### Median(nm)
+
+<div style="text-align: justify"> In this test evaluated the first and second order terms of the median model. The obtained p-values indicates that the null hypothesis was accepted for all tested terms and for the overall median model, hence, they are not heteroskedastic.</div>
+
+```{r}
+## Assumptions
+# Homoscedasticity - equality of variance values - Breusch-Pagan test
+lm2 <- lm(ymed~x1+x2+x3+I(x1^2)+I(x2^2)+I(x3^2), data = ccd1)
+ols_test_breusch_pagan(lm2, rhs = T, multiple = T)
+```
+
+#### Aggregation factor
+
+<div style="text-align: justify"> In terms of first and second order of the AggF model were evaluated by the Breusch-Pagan test. The obtained p-values indicates that the null hypothesis was rejected for the x3, indicating heteroskedasticity in this term. Even though one term presents heteroskedasticity, the overall model presented a p-value higher than 0.05, hence, the AggF model is not heteroskedastic.</div>
+
+```{r}
+## Assumptions
+# Homoscedasticity - equality of variance values - Breusch-Pagan test
+lm20 <- lm(yagg~x1+x2+x3+I(x1^2)+I(x2^2)+I(x3^2), data = ccd2)
+ols_test_breusch_pagan(lm20, rhs = T, multiple = T)
+```
+
+#### PDI width
+
+<div style="text-align: justify"> The Breusch-Pagan test was applied to the first and second order terms of the PDI width model. Similarly to the result presented for AggF model, the term x3 also presented heteroskedasticity. However, this result did not affect the overall homoscedasticity of the PDI width model, once the simultaneous analysis showed p-values higher than 0.05 and, hence, the PDI width model is not heteroskedastic.</div>
+
+```{r}
+## Assumptions
+# Homoscedasticity - equality of variance values - Breusch-Pagan test
+lm200 <- lm(ypdi~x1+x2+x3+I(x1^2)+I(x2^2)+I(x3^2), data = ccd3)
+ols_test_breusch_pagan(lm200, rhs = T, multiple = T)
+```
+
+# 5. Main effects graphics
+
+<div style="text-align: justify"> The effect plots show the response behavior when the model goes from the minimum to the maximum level. </div>
+
+```{r, warning = FALSE}
+x1_grid = seq(min(ccd1$x1), max(ccd1$x1), 0.1)
+center_grid = rep(0,length(x1_grid))
+```
+
+## 5.1 pH (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+<div style="text-align: justify"> The changes on the pH values leads to significant variation on the median and PDI width responses. In this session you can find the plots coded and decoded.</div>
+
+### Median (nm)
+
+<div style="text-align: justify"> In the median model the pH presents a significant negative effect in the first and second order terms. Indicating that the MSNs size decreases when the pH increases. </div>
+
+```{r, warning = FALSE}
+# pH (plot)
+e1.ymed <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm1,
+                             newdata = data.frame(x1 = x1_grid, 
+                                                  x2 = center_grid, 
+                                                  x3 = center_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("pH"))) +
+  ylab(expression(paste("Median (nm)"))) + 
+  ylim(80,110) + 
+  theme_bw() 
+e1.ymed
+
+# pH (data storage)
+axial_xvar <- x1_grid 
+
+yvar1 <- predict(rsm1,
+            newdata = data.frame(x1 = x1_grid, 
+                                 x2 = center_grid, 
+                                 x3 = center_grid))
+
+dataint <- data.frame(axial_xvar, yvar1)
+
+# pH (decoding) 
+e1.orig.ymed <- e1.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("8.8", "10.0", "11.2"))
+e1.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> For the AggF the pH present a negative effect, suggesting that the AggF decreases when the pH increases, i.e. the samples synthesized under higher pH values tend to present lower aggregation. </div>
+
+```{r, warning = FALSE}
+# pH (plot)
+e1.yagg <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm10,
+                             newdata = data.frame(x1 = x1_grid, 
+                                                  x2 = center_grid, 
+                                                  x3 = center_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("pH"))) +
+  ylab(expression(paste("Aggregation factor"))) + 
+  ylim(80,110) + 
+  theme_bw() 
+e1.yagg
+
+# pH (data storage)
+axial0_xvar <- x1_grid 
+
+yvar10 <- predict(rsm10,
+            newdata = data.frame(x1 = x1_grid, 
+                                 x2 = center_grid, 
+                                 x3 = center_grid))
+
+dataint <- data.frame(axial0_xvar, yvar10)
+
+# pH (decoding) 
+e1.orig.yagg <- e1.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("8.8", "10.0", "11.2"))
+e1.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> The pH terms present a significant negative effect, indicating that the PDI width decreases when the pH increases. Hence, the polydispersity of the MSNs decreases in systems with high pH values. </div>
+
+```{r, warning = FALSE}
+# pH (plot)
+e1.ypdi <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm100,
+                             newdata = data.frame(x1 = x1_grid, 
+                                                  x2 = center_grid, 
+                                                  x3 = center_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("pH"))) +
+  ylab(expression(paste("PDI width"))) + 
+  ylim(80,110) + 
+  theme_bw() 
+e1.ypdi
+
+# pH (data storage)
+axial00_xvar <- x1_grid 
+
+yvar100 <- predict(rsm100,
+            newdata = data.frame(x1 = x1_grid, 
+                                 x2 = center_grid, 
+                                 x3 = center_grid))
+
+dataint <- data.frame(axial00_xvar, yvar100)
+
+# pH (decoding) 
+e1.orig.ypdi <- e1.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("8.8", "10.0", "11.2"))
+e1.orig.ypdi
+```
+
+## 5.2 Temperature (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The temperature has a significant positive effect in the first order term of the median model, indicating that the size of the MSNs increase when the temperature rises. </div>
+
+```{r, warning = FALSE}
+# Temperature (plot)
+e2.ymed <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm1,
+                             newdata = data.frame(x1 = center_grid, 
+                                                  x2 = x1_grid, 
+                                                  x3 = center_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("temp (ºC)"))) +
+  ylab(expression(paste("Median (nm)"))) + 
+  ylim(80,110) +  
+  theme_bw()
+e2.ymed
+
+# Temperature (data storage)
+
+yvar2 <- predict(rsm1,
+           newdata = data.frame(x1 = center_grid, 
+                                x2 = x1_grid, 
+                                x3 = center_grid))
+
+dataint$yvar2 <- yvar2
+
+# Temperature (decoding)
+e2.orig.ymed <- e2.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("68.1", "80", "91.9"))
+e2.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The temperature does not affect in the AggF model, once the AggF values do not significantly vary when the temperature is increased.</div>
+
+```{r, warning = FALSE}
+# Temperature (plot)
+e2.yagg <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm10,
+                             newdata = data.frame(x1 = center_grid, 
+                                                  x2 = x1_grid, 
+                                                  x3 = center_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("temp (ºC)"))) +
+  ylab(expression(paste("Aggregation factor"))) + 
+  ylim(80,110) +  
+  theme_bw()
+e2.yagg
+
+# Temperature (data storage)
+
+yvar20 <- predict(rsm10,
+           newdata = data.frame(x1 = center_grid, 
+                                x2 = x1_grid, 
+                                x3 = center_grid))
+
+dataint$yvar20 <- yvar20
+
+# Temperature (decoding)
+e2.orig.yagg <- e2.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("68.1", "80", "91.9"))
+e2.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> Similarly to the result observed for the AggF model, the temperature also does not impact on the PDI width values.</div>
+
+```{r, warning = FALSE}
+# Temperature (plot)
+e2.ypdi <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm100,
+                             newdata = data.frame(x1 = center_grid, 
+                                                  x2 = x1_grid, 
+                                                  x3 = center_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("temp (ºC)"))) +
+  ylab(expression(paste("PDI width"))) + 
+  ylim(80,110) +  
+  theme_bw()
+e2.ypdi
+
+# Temperature (data storage)
+
+yvar200 <- predict(rsm100,
+           newdata = data.frame(x1 = center_grid, 
+                                x2 = x1_grid, 
+                                x3 = center_grid))
+
+dataint$yvar200 <- yvar200
+
+# Temperature (decoding)
+e2.orig.ypdi <- e2.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("68.1", "80", "91.9"))
+e2.orig.ypdi
+```
+
+## 5.3 TEOS/CTAB (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The variation of [TEOS]/[CTAB] ratio presents a significant negative effect on MSNs median, where the particles' size decreases when the [TEOS]/[CTAB] ratio increases. </div>
+
+```{r, warning = FALSE}
+# TEOSCTAB (plot)
+e3.ymed <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm1,
+                             newdata = data.frame(x1 = center_grid, 
+                                                  x2 = center_grid, 
+                                                  x3 = x1_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("TEOSCTAB"))) +
+  ylab(expression(paste("Median (nm)"))) + 
+  ylim(80,110) +  
+  theme_bw()
+e3.ymed
+
+# TEOSCTAB (data storage)
+yvar3 <- predict(rsm1,
+             newdata = data.frame(x1 = center_grid, 
+                                  x2 = center_grid, 
+                                  x3 = x1_grid))
+
+dataint$yvar3 <- yvar3
+
+
+# TEOSCTAB (decoding) 
+e3.orig.ymed <- e3.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("0.69", "1.40", "2.11"))
+e3.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The [TEOS]/[CTAB] ratio has a significant positive effect on the AggF values, once the particles present higher aggregation under greater [TEOS]/[CTAB] ratios.</div>
+
+```{r, warning = FALSE}
+# TEOSCTAB (plot)
+e3.yagg <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm10,
+                             newdata = data.frame(x1 = center_grid, 
+                                                  x2 = center_grid, 
+                                                  x3 = x1_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("TEOSCTAB"))) +
+  ylab(expression(paste("Aggregation factor"))) + 
+  ylim(80,110) +  
+  theme_bw()
+e3.yagg
+
+# TEOSCTAB (data storage)
+yvar30 <- predict(rsm10,
+             newdata = data.frame(x1 = center_grid, 
+                                  x2 = center_grid, 
+                                  x3 = x1_grid))
+
+dataint$yvar30 <- yvar30
+
+
+# TEOSCTAB (decoding) 
+e3.orig.yagg <- e3.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("0.69", "1.40", "2.11"))
+e3.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> The [TEOS]/[CTAB] ratio also presents a significant positive effect on PDI width values. In this scenario the MSNs polydispersity increases when the [TEOS]/[CTAB] ratio is incremented. </div>
+
+```{r, warning = FALSE}
+# TEOSCTAB (plot)
+e3.ypdi <- ggplot() +        
+  geom_line(aes(x = x1_grid, 
+                y = (predict(rsm100,
+                             newdata = data.frame(x1 = center_grid, 
+                                                  x2 = center_grid, 
+                                                  x3 = x1_grid)))),
+            colour = 'firebrick1') +
+  xlab(expression(paste("TEOSCTAB"))) +
+  ylab(expression(paste("PDI width"))) + 
+  ylim(80,110) +  
+  theme_bw()
+e3.ypdi
+
+# TEOSCTAB (data storage)
+yvar300 <- predict(rsm100,
+             newdata = data.frame(x1 = center_grid, 
+                                  x2 = center_grid, 
+                                  x3 = x1_grid))
+
+dataint$yvar300 <- yvar300
+
+
+# TEOSCTAB (decoding) 
+e3.orig.ypdi <- e3.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                         label = c("0.69", "1.40", "2.11"))
+e3.orig.ypdi
+```
+
+## 5.4 Effect graphics (coded) {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session we show the graphs presenting the second order effects obtained for each studied model, using the coded scale.</div>
+
+### Median (nm)
+
+```{r, warning = FALSE}
+ggarrange(e1.ymed, e2.ymed, e3.ymed, ncol  =  3 , nrow  =  1)
+```
+
+### Aggregation factor
+```{r, warning = FALSE}
+ggarrange(e1.yagg, e2.yagg, e3.yagg, ncol  =  3 , nrow  =  1)
+```
+
+### PDI width
+```{r, warning = FALSE}
+ggarrange(e1.ypdi, e2.ypdi, e3.ypdi, ncol  =  3 , nrow  =  1)
+```
+
+## 5.5 Effect graphics (decoded) {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session we show the graphs presenting the second order effects obtained for each studied model, using the decoded scale.</div>
+
+### Median (nm)
+```{r, warning = FALSE}
+ggarrange(e1.orig.ymed,e2.orig.ymed,e3.orig.ymed,  ncol  =  3 , nrow  =  1)
+```
+
+### Aggregation factor
+```{r, warning = FALSE}
+ggarrange(e1.orig.yagg,e2.orig.yagg,e3.orig.yagg,  ncol  =  3 , nrow  =  1)
+```
+
+### PDI width
+```{r, warning = FALSE}
+ggarrange(e1.orig.ypdi,e2.orig.ypdi,e3.orig.ypdi,  ncol  =  3 , nrow  =  1)
+```
+
+# 6. Effects graphs for interactions
+
+<div style="text-align: justify"> In this session we show the graphs that represent the interaction effects.</div>
+
+## 6.1 pH x temp (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> This plot shows that there is no dependence between the variation of pH and temperature in the median model, once the curves present the same trend in the three interactions.</div>
+
+```{r, warning = FALSE}
+# pH x temp
+i2.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+x2_grid_1 = rep(-1,length(x1_grid))
+x2_grid1 = rep(1,length(x1_grid))
+
+i12.ymed <- i2.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "1")) + 
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+i12.ymed
+
+# pH x temp  (data storage)
+pc_yvar12 <- predict(rsm1, 
+            newdata = data.frame(x1 = x1_grid, 
+                                 x2 = center_grid, 
+                                 x3 = center_grid))
+
+min_yvar12 <- predict(rsm1,
+              newdata = data.frame(x1 = x1_grid,
+                                   x2 = x2_grid_1,
+                                   x3 = center_grid))
+
+max_yvar12 <- predict(rsm1, 
+              newdata = data.frame(x1 = x1_grid, 
+                                   x2 = x2_grid1, 
+                                   x3 = center_grid))
+
+dataint$pc_yvar12 <- pc_yvar12
+dataint$min_yvar12 <- min_yvar12
+dataint$max_yvar12 <- max_yvar12
+
+# pH x temp  (decoding)
+i2.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "80.0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i12.ymed <- i2.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "68.1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "91.9")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("68.1" = "red1","80.0" = "orange1", "91.9" = "green3"))
+
+i12.orig.ymed <- i12.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("8.8", "10.0", "11.2"))
+i12.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> This plot shows that there no interaction effect between pH and temperature in the AggF model, once all curves present similar behavior in the three interactions studied.</div>
+
+```{r, warning = FALSE}
+# pH x temp
+i2.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i12.yagg <- i2.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "1")) + 
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+i12.yagg
+
+# pH x temp  (data storage)
+pc_yvar120 <- predict(rsm10, 
+            newdata = data.frame(x1 = x1_grid, 
+                                 x2 = center_grid, 
+                                 x3 = center_grid))
+
+min_yvar120 <- predict(rsm10,
+              newdata = data.frame(x1 = x1_grid,
+                                   x2 = x2_grid_1,
+                                   x3 = center_grid))
+
+max_yvar120 <- predict(rsm10, 
+              newdata = data.frame(x1 = x1_grid, 
+                                   x2 = x2_grid1, 
+                                   x3 = center_grid))
+
+dataint$pc_yvar120 <- pc_yvar120
+dataint$min_yvar120 <- min_yvar120
+dataint$max_yvar120 <- max_yvar120
+
+# pH x temp  (decoding)
+i2.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "80.0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i12.yagg <- i2.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "68.1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "91.9")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("68.1" = "red1","80.0" = "orange1", "91.9" = "green3"))
+
+i12.orig.yagg <- i12.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("8.8", "10.0", "11.2"))
+i12.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> The plots show that there are no interaction effects between pH and temperature in the PDI width model, since all curves present similar trends.</div>
+
+```{r, warning = FALSE}
+# pH x temp
+i2.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+
+i12.ypdi <- i2.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "1")) + 
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+i12.ypdi
+
+# pH x temp  (data storage)
+pc_yvar1200 <- predict(rsm100, 
+            newdata = data.frame(x1 = x1_grid, 
+                                 x2 = center_grid, 
+                                 x3 = center_grid))
+
+min_yvar1200 <- predict(rsm100,
+              newdata = data.frame(x1 = x1_grid,
+                                   x2 = x2_grid_1,
+                                   x3 = center_grid))
+
+max_yvar1200 <- predict(rsm100, 
+              newdata = data.frame(x1 = x1_grid, 
+                                   x2 = x2_grid1, 
+                                   x3 = center_grid))
+
+dataint$pc_yvar1200 <- pc_yvar1200
+dataint$min_yvar1200 <- min_yvar1200
+dataint$max_yvar1200 <- max_yvar1200
+
+# pH x temp  (decoding)
+i2.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "80.0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i12.ypdi <- i2.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "68.1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "91.9")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("68.1" = "red1","80.0" = "orange1", "91.9" = "green3"))
+
+i12.orig.ypdi <- i12.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("8.8", "10.0", "11.2"))
+i12.orig.ypdi
+```
+
+
+## 6.2 pH x [TEOS]/[CTAB] (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The plot of pH vs [TEOS]/[CTAB] ratio shows that there is no significant interaction effect between these factors, since the trend of the presented curves are similar in all studied combinations. </div>
+
+```{r, warning = FALSE}
+# pH x TEOSCTAB
+i3.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i13.ymed <- i3.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i13.ymed
+
+
+## pH x TEOSCTAB (data storage)
+
+pc_yvar13 <- predict(rsm1, 
+                  newdata = data.frame(x1 = x1_grid, 
+                                       x3 = center_grid, 
+                                       x2 = center_grid))
+
+min_yvar13 <- predict(rsm1,
+                  newdata = data.frame(x1 = x1_grid,
+                             x3 = x2_grid_1,
+                             x2 = center_grid))
+
+max_yvar13 <- predict(rsm1, 
+        newdata = data.frame(x1 = x1_grid, 
+                             x3 = x2_grid1, 
+                             x2 = center_grid))
+
+dataint$pc_yvar13 <- pc_yvar13
+dataint$min_yvar13 <- min_yvar13
+dataint$max_yvar13 <- max_yvar13
+
+# pH x TEOSCTAB (decoding)
+i3.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "1.40")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i13.ymed <- i3.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "0.69")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "2.11")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("0.69" = "red1","1.40" = "orange1", "2.11" = "green3"))
+
+i13.orig.ymed <- i13.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("8.8", "10.0", "11.2"))
+i13.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> This plot shows that the pH variations impact significantly on [TEOS]/[CTAB] ratio variation. We observe that when x3 ([TEOS]/[CTAB]) is +1 (2.11) and 0 (1.40) it presents a negative effect when the pH decreases, i.e. the aggregation decreases in samples with x3 < 0 ([TEOS]/[CTAB] < 1.40) when the pH increases. The opposite trend is noticed when x3 = -1 ([TEOS]/[CTAB] = 0.69), the aggregation increases in systems under higher pH values.</div>
+
+```{r, warning = FALSE}
+# pH x TEOSCTAB
+i3.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i13.yagg <- i3.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i13.yagg
+
+
+## pH x TEOSCTAB (data storage)
+
+pc_yvar130 <- predict(rsm10, 
+                  newdata = data.frame(x1 = x1_grid, 
+                                       x3 = center_grid, 
+                                       x2 = center_grid))
+
+min_yvar130 <- predict(rsm10,
+                  newdata = data.frame(x1 = x1_grid,
+                             x3 = x2_grid_1,
+                             x2 = center_grid))
+
+max_yvar130 <- predict(rsm10, 
+        newdata = data.frame(x1 = x1_grid, 
+                             x3 = x2_grid1, 
+                             x2 = center_grid))
+
+dataint$pc_yvar130 <- pc_yvar130
+dataint$min_yvar130 <- min_yvar130
+dataint$max_yvar130 <- max_yvar130
+
+# pH x TEOSCTAB (decoding)
+i3.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "1.40")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i13.yagg <- i3.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "0.69")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "2.11")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("0.69" = "red1","1.40" = "orange1", "2.11" = "green3"))
+
+i13.orig.yagg <- i13.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("8.8", "10.0", "11.2"))
+i13.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> In this plot we observe that the pH variations impact significantly on [TEOS]/[CTAB] ratio variation. When x3 ([TEOS]/[CTAB]) is +1 (2.11) and 0 (1.40) the polydispersity of the samples decreases under high pH values. Conversely, when x3 = -1 ([TEOS]/[CTAB] = 0.69), the polydispersity of the MSNs dispersion rises with the increment in the pH values.</div>
+
+```{r, warning = FALSE}
+# pH x TEOSCTAB
+i3.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i13.ypdi <- i3.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i13.ypdi
+
+
+## pH x TEOSCTAB (data storage)
+
+pc_yvar1300 <- predict(rsm100, 
+                  newdata = data.frame(x1 = x1_grid, 
+                                       x3 = center_grid, 
+                                       x2 = center_grid))
+
+min_yvar1300 <- predict(rsm100,
+                  newdata = data.frame(x1 = x1_grid,
+                             x3 = x2_grid_1,
+                             x2 = center_grid))
+
+max_yvar1300 <- predict(rsm100, 
+        newdata = data.frame(x1 = x1_grid, 
+                             x3 = x2_grid1, 
+                             x2 = center_grid))
+
+dataint$pc_yvar1300 <- pc_yvar1300
+dataint$min_yvar1300 <- min_yvar1300
+dataint$max_yvar1300 <- max_yvar1300
+
+# pH x TEOSCTAB (decoding)
+i3.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "1.40")) +
+  ggtitle('') +
+  xlab('pH') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i13.ypdi <- i3.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x1 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "0.69")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x1 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "2.11")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("0.69" = "red1","1.40" = "orange1", "2.11" = "green3"))
+
+i13.orig.ypdi <- i13.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("8.8", "10.0", "11.2"))
+i13.orig.ypdi
+```
+
+## 6.3 temp x TEOS/CTAB (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between temperature and [TEOS]/[CTAB] ratio in the median model, once the curves present similar behavior under different scenarios.</div>
+
+```{r, warning = FALSE}
+# temp x TEOSCTAB
+i3.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i23.ymed <- i3.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i23.ymed
+
+
+# temp x TEOSCTAB (data storage)
+
+pc_yvar23 <- predict(rsm1, 
+                newdata = data.frame(x2 = x1_grid, 
+                                     x3 = center_grid, 
+                                     x1 = center_grid))
+
+min_yvar23 <- predict(rsm1,
+                newdata = data.frame(x2 = x1_grid,
+                                     x3 = x2_grid_1,
+                                     x1 = center_grid))
+
+max_yvar23 <- predict(rsm1, 
+                  newdata = data.frame(x2 = x1_grid, 
+                                       x3 = x2_grid1, 
+                                       x1 = center_grid))
+
+dataint$pc_yvar23 <- pc_yvar23
+dataint$min_yvar23 <- min_yvar23
+dataint$max_yvar23 <- max_yvar23
+
+# temp x TEOSCTAB (decoding)
+i3.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "1.40")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i23.ymed <- i3.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "0.69")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "2.11")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("0.69" = "red1","1.40" = "orange1", "2.11" = "green3"))
+
+i23.orig.ymed <- i23.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("68.1", "80.0", "91.9"))
+i23.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between temperature and [TEOS]/[CTAB] ratio in the AggF model, once the curves present similar behavior under different scenarios.</div>
+
+```{r, warning = FALSE}
+# temp x TEOSCTAB
+i3.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i23.yagg <- i3.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i23.yagg
+
+
+# temp x TEOSCTAB (data storage)
+
+pc_yvar230 <- predict(rsm10, 
+                newdata = data.frame(x2 = x1_grid, 
+                                     x3 = center_grid, 
+                                     x1 = center_grid))
+
+min_yvar230 <- predict(rsm10,
+                newdata = data.frame(x2 = x1_grid,
+                                     x3 = x2_grid_1,
+                                     x1 = center_grid))
+
+max_yvar230 <- predict(rsm10, 
+                  newdata = data.frame(x2 = x1_grid, 
+                                       x3 = x2_grid1, 
+                                       x1 = center_grid))
+
+dataint$pc_yvar230 <- pc_yvar230
+dataint$min_yvar230 <- min_yvar230
+dataint$max_yvar230 <- max_yvar230
+
+# temp x TEOSCTAB (decoding)
+i3.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "1.40")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i23.yagg <- i3.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "0.69")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "2.11")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("0.69" = "red1","1.40" = "orange1", "2.11" = "green3"))
+
+i23.orig.yagg <- i23.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("68.1", "80.0", "91.9"))
+i23.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between temperature and [TEOS]/[CTAB] ratio in the PDI width, once the curves present similar behavior under different scenarios.</div>
+
+```{r, warning = FALSE}
+# temp x TEOSCTAB
+i3.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i23.ypdi <- i3.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i23.ypdi
+
+
+# temp x TEOSCTAB (data storage)
+
+pc_yvar2300 <- predict(rsm100, 
+                newdata = data.frame(x2 = x1_grid, 
+                                     x3 = center_grid, 
+                                     x1 = center_grid))
+
+min_yvar2300 <- predict(rsm100,
+                newdata = data.frame(x2 = x1_grid,
+                                     x3 = x2_grid_1,
+                                     x1 = center_grid))
+
+max_yvar2300 <- predict(rsm100, 
+                  newdata = data.frame(x2 = x1_grid, 
+                                       x3 = x2_grid1, 
+                                       x1 = center_grid))
+
+dataint$pc_yvar2300 <- pc_yvar2300
+dataint$min_yvar2300 <- min_yvar2300
+dataint$max_yvar2300 <- max_yvar2300
+
+# temp x TEOSCTAB (decoding)
+i3.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "1.40")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i23.ypdi <- i3.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x3 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "0.69")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x3 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "2.11")) +
+  scale_color_manual(name = "TEOSCTAB", 
+                     values = c("0.69" = "red1","1.40" = "orange1", "2.11" = "green3"))
+
+i23.orig.ypdi <- i23.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("68.1", "80.0", "91.9"))
+i23.orig.ypdi
+```
+
+## 6.4 TEOS/CTAB x pH (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between pH and [TEOS]/[CTAB] ratio, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# TEOSCTAB x pH
+i1.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i31.ymed <- i1.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "pH", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i31.ymed
+
+## TEOSCTAB x pH (data storage)
+
+pc_yvar31 <- predict(rsm1, 
+               newdata = data.frame(x3 = x1_grid, 
+                                    x1 = center_grid, 
+                                    x2 = center_grid))
+
+min_yvar31 <- predict(rsm1,
+                newdata = data.frame(x3 = x1_grid,
+                                     x1 = x2_grid_1,
+                                     x2 = center_grid))
+
+max_yvar31 <- predict(rsm1, 
+                 newdata = data.frame(x3 = x1_grid, 
+                                      x1 = x2_grid1, 
+                                      x2 = center_grid))
+
+dataint$pc_yvar31 <- pc_yvar31
+dataint$min_yvar31 <- min_yvar31
+dataint$max_yvar31 <- max_yvar31
+
+# TEOSCTAB x pH (decoding)
+i1.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "10.0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i31.ymed <- i1.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "8.8")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "11.2")) +
+  scale_color_manual(name = "pH", 
+                     values = c("8.8" = "red1","10.0" = "orange1", "11.2" = "green3"))
+
+i31.orig.ymed <- i31.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("0.69", "1.40", "2.11"))
+i31.orig.ymed
+```
+
+### Aggregation factor
+
+???
+
+```{r, warning = FALSE}
+# TEOSCTAB x pH
+i1.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i31.yagg <- i1.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "pH", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i31.yagg
+
+## TEOSCTAB x pH (data storage)
+
+pc_yvar310 <- predict(rsm10, 
+               newdata = data.frame(x3 = x1_grid, 
+                                    x1 = center_grid, 
+                                    x2 = center_grid))
+
+min_yvar310 <- predict(rsm10,
+                newdata = data.frame(x3 = x1_grid,
+                                     x1 = x2_grid_1,
+                                     x2 = center_grid))
+
+max_yvar310 <- predict(rsm10, 
+                 newdata = data.frame(x3 = x1_grid, 
+                                      x1 = x2_grid1, 
+                                      x2 = center_grid))
+
+dataint$pc_yvar310 <- pc_yvar310
+dataint$min_yvar310 <- min_yvar310
+dataint$max_yvar310 <- max_yvar310
+
+# TEOSCTAB x pH (decoding)
+i1.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "10.0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i31.yagg <- i1.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "8.8")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "11.2")) +
+  scale_color_manual(name = "pH", 
+                     values = c("8.8" = "red1","10.0" = "orange1", "11.2" = "green3"))
+
+i31.orig.yagg <- i31.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("0.69", "1.40", "2.11"))
+i31.orig.yagg
+```
+
+### PDI width
+
+???
+
+```{r, warning = FALSE}
+# TEOSCTAB x pH
+i1.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i31.ypdi <- i1.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "pH", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i31.ypdi
+
+## TEOSCTAB x pH (data storage)
+
+pc_yvar3100 <- predict(rsm100, 
+               newdata = data.frame(x3 = x1_grid, 
+                                    x1 = center_grid, 
+                                    x2 = center_grid))
+
+min_yvar3100 <- predict(rsm100,
+                newdata = data.frame(x3 = x1_grid,
+                                     x1 = x2_grid_1,
+                                     x2 = center_grid))
+
+max_yvar3100 <- predict(rsm100, 
+                 newdata = data.frame(x3 = x1_grid, 
+                                      x1 = x2_grid1, 
+                                      x2 = center_grid))
+
+dataint$pc_yvar3100 <- pc_yvar3100
+dataint$min_yvar3100 <- min_yvar3100
+dataint$max_yvar3100 <- max_yvar3100
+
+# TEOSCTAB x pH (decoding)
+i1.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x2 = center_grid)),
+                color = "10.0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i31.ypdi <- i1.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x2 = center_grid)),
+                color = "8.8")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x2 = center_grid)),
+                color = "11.2")) +
+  scale_color_manual(name = "pH", 
+                     values = c("8.8" = "red1","10.0" = "orange1", "11.2" = "green3"))
+
+i31.orig.ypdi <- i31.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("0.69", "1.40", "2.11"))
+i31.orig.ypdi
+```
+
+## 6.5 TEOS/CTAB x temp (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between [TEOS]/[CTAB] ratio and temperature in the median model, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# TEOSCTAB x temp (plot)
+i2.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i32.ymed <- i2.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i32.ymed
+
+# TEOSCTAB x temp (data storage)
+pc_yvar32 <- predict(rsm1, 
+               newdata = data.frame(x3 = x1_grid, 
+                                    x2 = center_grid, 
+                                    x1 = center_grid))
+
+min_yvar32 <- predict(rsm1,
+                newdata = data.frame(x3 = x1_grid,
+                                     x2 = x2_grid_1,
+                                     x1 = center_grid))
+
+max_yvar32 <- predict(rsm1, 
+                newdata = data.frame(x3 = x1_grid, 
+                                     x2 = x2_grid1, 
+                                     x1 = center_grid))
+
+dataint$pc_yvar32 <- pc_yvar32
+dataint$min_yvar32 <- min_yvar32
+dataint$max_yvar32 <- max_yvar32
+
+# TEOSCTAB x temp (decoding)
+i2.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "80.0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i32.ymed <- i2.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "68.1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "91.9")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("68.1" = "red1","80.0" = "orange1", "91.9" = "green3"))
+
+i32.orig.ymed <- i32.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("0.69", "1.40", "2.11"))
+i32.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between [TEOS]/[CTAB] ratio and temperature in the AggF model, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# TEOSCTAB x temp (plot)
+i2.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i32.yagg <- i2.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i32.yagg
+
+# TEOSCTAB x temp (data storage)
+pc_yvar320 <- predict(rsm10, 
+               newdata = data.frame(x3 = x1_grid, 
+                                    x2 = center_grid, 
+                                    x1 = center_grid))
+
+min_yvar320 <- predict(rsm10,
+                newdata = data.frame(x3 = x1_grid,
+                                     x2 = x2_grid_1,
+                                     x1 = center_grid))
+
+max_yvar320 <- predict(rsm10, 
+                newdata = data.frame(x3 = x1_grid, 
+                                     x2 = x2_grid1, 
+                                     x1 = center_grid))
+
+dataint$pc_yvar320 <- pc_yvar320
+dataint$min_yvar320 <- min_yvar320
+dataint$max_yvar320 <- max_yvar320
+
+# TEOSCTAB x temp (decoding)
+i2.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "80.0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i32.yagg <- i2.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "68.1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "91.9")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("68.1" = "red1","80.0" = "orange1", "91.9" = "green3"))
+
+i32.orig.yagg <- i32.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("0.69", "1.40", "2.11"))
+i32.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between [TEOS]/[CTAB] ratio and temperature in the PDI width model, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# TEOSCTAB x temp (plot)
+i2.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i32.ypdi <- i2.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i32.ypdi
+
+# TEOSCTAB x temp (data storage)
+pc_yvar3200 <- predict(rsm100, 
+               newdata = data.frame(x3 = x1_grid, 
+                                    x2 = center_grid, 
+                                    x1 = center_grid))
+
+min_yvar3200 <- predict(rsm100,
+                newdata = data.frame(x3 = x1_grid,
+                                     x2 = x2_grid_1,
+                                     x1 = center_grid))
+
+max_yvar3200 <- predict(rsm100, 
+                newdata = data.frame(x3 = x1_grid, 
+                                     x2 = x2_grid1, 
+                                     x1 = center_grid))
+
+dataint$pc_yvar3200 <- pc_yvar3200
+dataint$min_yvar3200 <- min_yvar3200
+dataint$max_yvar3200 <- max_yvar3200
+
+# TEOSCTAB x temp (decoding)
+i2.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = center_grid, 
+                                                 x1 = center_grid)),
+                color = "80.0")) +
+  ggtitle('') +
+  xlab('TEOSCTAB') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i32.ypdi <- i2.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x3 = x1_grid,
+                                                 x2 = x2_grid_1,
+                                                 x1 = center_grid)),
+                color = "68.1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x3 = x1_grid, 
+                                                 x2 = x2_grid1, 
+                                                 x1 = center_grid)),
+                color = "91.9")) +
+  scale_color_manual(name = "temp (ºC)", 
+                     values = c("68.1" = "red1","80.0" = "orange1", "91.9" = "green3"))
+
+i32.orig.ypdi <- i32.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("0.69", "1.40", "2.11"))
+i32.orig.ypdi
+```
+
+## 6.6 temp x pH (plotting, data storage and decoding data) {.tabset .tabset-fade}
+
+### Median (nm)
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between temperature and pH in the median model, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# temp x pH (plot)
+i1.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i21.ymed <- i1.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "pH", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i21.ymed
+
+# temp x pH (data storage)
+pc_yvar21 <- predict(rsm1, 
+               newdata = data.frame(x2 = x1_grid, 
+                                    x1 = center_grid, 
+                                    x3 = center_grid))
+
+min_yvar21 <- predict(rsm1,
+               newdata = data.frame(x2 = x1_grid,
+                                    x1 = x2_grid_1,
+                                    x3 = center_grid))
+
+max_yvar21 <- predict(rsm1, 
+               newdata = data.frame(x2 = x1_grid, 
+                                    x1 = x2_grid1, 
+                                    x3 = center_grid))
+
+dataint$pc_yvar21 <- pc_yvar21
+dataint$min_yvar21 <- min_yvar21
+dataint$max_yvar21 <- max_yvar21
+
+# temp x pH (decoding)
+i1.ymed <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "10.0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Median (nm)') +
+  ylim(80,110) + 
+  theme_bw()
+
+i21.ymed <- i1.ymed +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm1,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "8.8")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm1, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "11.2")) +
+  scale_color_manual(name = "pH", 
+                     values = c("8.8" = "red1","10.0" = "orange1", "11.2" = "green3"))
+
+i21.orig.ymed <- i21.ymed + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("68.1", "80", "91.9"))
+i21.orig.ymed
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between temperature and pH in the AggF model, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# temp x pH (plot)
+i1.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i21.yagg <- i1.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "pH", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i21.yagg
+
+# temp x pH (data storage)
+pc_yvar210 <- predict(rsm10, 
+               newdata = data.frame(x2 = x1_grid, 
+                                    x1 = center_grid, 
+                                    x3 = center_grid))
+
+min_yvar210 <- predict(rsm10,
+               newdata = data.frame(x2 = x1_grid,
+                                    x1 = x2_grid_1,
+                                    x3 = center_grid))
+
+max_yvar210 <- predict(rsm10, 
+               newdata = data.frame(x2 = x1_grid, 
+                                    x1 = x2_grid1, 
+                                    x3 = center_grid))
+
+dataint$pc_yvar210 <- pc_yvar210
+dataint$min_yvar210 <- min_yvar210
+dataint$max_yvar210 <- max_yvar210
+
+# temp x pH (decoding)
+i1.yagg <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "10.0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('Aggregation factor') +
+  ylim(80,110) + 
+  theme_bw()
+
+i21.yagg <- i1.yagg +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm10,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "8.8")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm10, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "11.2")) +
+  scale_color_manual(name = "pH", 
+                     values = c("8.8" = "red1","10.0" = "orange1", "11.2" = "green3"))
+
+i21.orig.yagg <- i21.yagg + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("68.1", "80", "91.9"))
+i21.orig.yagg
+```
+
+### PDI width
+
+<div style="text-align: justify"> The plot shows that there is no significant interaction effect between temperature and pH in the PDI width model, once the curves present similar behavior under different conditions.</div>
+
+```{r, warning = FALSE}
+# temp x pH (plot)
+i1.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i21.ypdi <- i1.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "-1")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "1")) +
+  scale_color_manual(name = "pH", 
+                     values = c("-1" = "red1", "0" = "orange1", "1" = "green3"))
+
+i21.ypdi
+
+# temp x pH (data storage)
+pc_yvar2100 <- predict(rsm100, 
+               newdata = data.frame(x2 = x1_grid, 
+                                    x1 = center_grid, 
+                                    x3 = center_grid))
+
+min_yvar2100 <- predict(rsm100,
+               newdata = data.frame(x2 = x1_grid,
+                                    x1 = x2_grid_1,
+                                    x3 = center_grid))
+
+max_yvar2100 <- predict(rsm100, 
+               newdata = data.frame(x2 = x1_grid, 
+                                    x1 = x2_grid1, 
+                                    x3 = center_grid))
+
+dataint$pc_yvar2100 <- pc_yvar2100
+dataint$min_yvar2100 <- min_yvar2100
+dataint$max_yvar2100 <- max_yvar2100
+
+# temp x pH (decoding)
+i1.ypdi <- ggplot() +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = center_grid, 
+                                                 x3 = center_grid)),
+                color = "10.0")) +
+  ggtitle('') +
+  xlab('temp (ºC)') +
+  ylab('PDI width') +
+  ylim(80,110) + 
+  theme_bw()
+
+i21.ypdi <- i1.ypdi +
+  geom_line(aes(x = x1_grid,
+                y = predict(rsm100,
+                            newdata = data.frame(x2 = x1_grid,
+                                                 x1 = x2_grid_1,
+                                                 x3 = center_grid)),
+                color = "8.8")) +
+  geom_line(aes(x = x1_grid, 
+                y = predict(rsm100, 
+                            newdata = data.frame(x2 = x1_grid, 
+                                                 x1 = x2_grid1, 
+                                                 x3 = center_grid)),
+                color = "11.2")) +
+  scale_color_manual(name = "pH", 
+                     values = c("8.8" = "red1","10.0" = "orange1", "11.2" = "green3"))
+
+i21.orig.ypdi <- i21.ypdi + scale_x_continuous(breaks = c(-1, 0, 1),
+                                               label = c("68.1", "80", "91.9"))
+i21.orig.ypdi
+```
+
+## 6.7 Effects graphs for interactions (Coded)  {.tabset .tabset-fade}
+
+### Median (nm)
+```{r, warning = FALSE}
+ggarrange(i12.ymed,i13.ymed,i23.ymed,i31.ymed,i32.ymed,i21.ymed, ncol  =  3 , nrow  =  2) 
+```
+
+### Aggregation factor
+```{r, warning = FALSE}
+ggarrange(i12.yagg,i13.yagg,i23.yagg,i31.yagg,i32.yagg,i21.yagg, ncol  =  3 , nrow  =  2) 
+```
+
+### PDI width
+```{r, warning = FALSE}
+ggarrange(i12.ypdi,i13.ypdi,i23.ypdi,i31.ypdi,i32.ypdi,i21.ypdi, ncol  =  3 , nrow  =  2) 
+```
+
+## 6.8 Effects graphs for interactions (Decoded)  {.tabset .tabset-fade}
+
+### Median (nm)
+```{r, warning = FALSE}
+ggarrange(i12.orig.ymed,i13.orig.ymed,i23.orig.ymed,i31.orig.ymed,i32.orig.ymed,i21.orig.ymed,  ncol  =  3 , nrow  =  2) 
+```
+
+### Aggregation factor
+```{r, warning = FALSE}
+ggarrange(i12.orig.yagg,i13.orig.yagg,i23.orig.yagg,i31.orig.yagg,i32.orig.yagg,i21.orig.yagg,  ncol  =  3 , nrow  =  2) 
+```
+
+### PDI width
+```{r, warning = FALSE}
+ggarrange(i12.orig.ypdi,i13.orig.ypdi,i23.orig.ypdi,i31.orig.ypdi,i32.orig.ypdi,i21.orig.ypdi,  ncol  =  3 , nrow  =  2) 
+```
+
+# 7. Coded and decoded contour plots and response surfaces
+
+<div style="text-align: justify"> The studied models can be represented in 2D contour plots and 3D surfaces to promote a better visualization of the response behavior under the variation of pH (x1), temperature (x2) and [TEOS]/[CTAB] (x3).</div>
+
+## 7.1 Coded graphics (Contour Plots and Response Surface)  {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session the plots of 2D contours and 3D surfaces are being presented using coded scale.</div>
+
+### Median (nm)
+
+<div style="text-align: justify"> For the median model we observe that the median data is well distributed in a maximized region of the median model, once we observe a maximum point close to the center of the plots.</div>
+
+```{r}
+### Gráficos de contorno e superficie de resposta para lm1 (codificado)
+
+par(mfrow = c(1,3)) # mfrow=c(nrows, ncols)
+contour(lm1, ~x1 + x2, image = TRUE, xlabs = c("pH", "temp (ºC)"))
+contour(lm1, ~x1 + x3, image = TRUE, xlabs = c("pH", "TEOSCTAB"))
+contour(lm1, ~x2 + x3, image = TRUE, xlabs = c("temp (°C)", "TEOSCTAB"))
+persp(lm1, ~x1 + x2, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "temp (ºC)"))
+persp(lm1, ~x1 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "TEOSCTAB"))
+persp(lm1, ~x2 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("temp (°C)", "TEOSCTAB"))
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> For the AggF model we observe 2D and 3D plots representative of a saddle region of the model, where there is no defined point of maximization or minimization of the response. This result hampers the used of this model for further prediction process.</div>
+
+```{r}
+### Gráficos de contorno e superficie de resposta para lm1 (codificado)
+
+par(mfrow = c(1,3)) # mfrow=c(nrows, ncols)
+contour(lm10, ~x1 + x2, image = TRUE, xlabs = c("pH", "temp (ºC)"))
+contour(lm10, ~x1 + x3, image = TRUE, xlabs = c("pH", "TEOSCTAB"))
+contour(lm10, ~x2 + x3, image = TRUE, xlabs = c("temp (°C)", "TEOSCTAB"))
+persp(lm10, ~x1 + x2, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "temp (ºC)"))
+persp(lm10, ~x1 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "TEOSCTAB"))
+persp(lm10, ~x2 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("temp (°C)", "TEOSCTAB"))
+```
+
+### PDI width
+
+<div style="text-align: justify"> The 2D contour plots and the 3D surfaces obtained for the PDI width model we observe that the PDI width data is distributed in a saddle region of the model, where there is no defined point of maximization or minimization of the response. As mentioned for the AggF, this result hampers the used of this model for further prediction process.</div>
+
+```{r}
+### Gráficos de contorno e superficie de resposta para lm1 (codificado)
+
+par(mfrow = c(1,3)) # mfrow=c(nrows, ncols)
+contour(lm100, ~x1 + x2, image = TRUE, xlabs = c("pH", "temp (ºC)"))
+contour(lm100, ~x1 + x3, image = TRUE, xlabs = c("pH", "TEOSCTAB"))
+contour(lm100, ~x2 + x3, image = TRUE, xlabs = c("temp (°C)", "TEOSCTAB"))
+persp(lm100, ~x1 + x2, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "temp (ºC)"))
+persp(lm100, ~x1 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "TEOSCTAB"))
+persp(lm100, ~x2 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("temp (°C)", "TEOSCTAB"))
+```
+
+## 7.2 Decoded graphics (Contour Plots and Response Surface)  {.tabset .tabset-fade}
+
+<div style="text-align: justify"> In this session the plots of 2D contours and 3D surfaces are being presented using decoded scale.</div>
+
+### Median (nm)
+
+<div style="text-align: justify"> For the median model we observe that the median data is well distributed in a maximized region of the median model, once we observe a maximum point close to the center of the plots.</div>
+
+```{r}
+### Gráficos de contorno e superficie para rsm1
+par(mfrow = c(1,3))  # mfrow=c(nrows, ncols)
+contour(rsm1, ~x1 + x2, image = TRUE, xlabs = c("pH", "temp (ºC)"))
+contour(rsm1, ~x1 + x3, image = TRUE, xlabs = c("pH", "TEOSCTAB"))
+contour(rsm1, ~x2 + x3, image = TRUE, xlabs = c("temp (°C)", "TEOSCTAB"))
+persp(rsm1, ~x1 + x2, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "temp (ºC)"))
+persp(rsm1, ~x1 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "TEOSCTAB"))
+persp(rsm1, ~x2 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("temp (°C)", "TEOSCTAB"))
+```
+
+### Aggregation factor
+
+<div style="text-align: justify"> For the AggF model we observe 2D and 3D plots representative of a saddle region of the model, where there is no defined point of maximization or minimization of the response. This result hampers the used of this model for further prediction process.</div>
+
+```{r}
+### Gráficos de contorno e superficie para rsm1
+par(mfrow = c(1,3))  # mfrow=c(nrows, ncols)
+contour(rsm10, ~x1 + x2, image = TRUE, xlabs = c("pH", "temp (ºC)"))
+contour(rsm10, ~x1 + x3, image = TRUE, xlabs = c("pH", "TEOSCTAB"))
+contour(rsm10, ~x2 + x3, image = TRUE, xlabs = c("temp (°C)", "TEOSCTAB"))
+persp(rsm10, ~x1 + x2, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "temp (ºC)"))
+persp(rsm10, ~x1 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "TEOSCTAB"))
+persp(rsm10, ~x2 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("temp (°C)", "TEOSCTAB"))
+```
+
+### PDI width
+
+<div style="text-align: justify"> The 2D contour plots and the 3D surfaces obtained for the PDI width model we observe that the PDI width data is distributed in a saddle region of the model, where there is no defined point of maximization or minimization of the response. As mentioned for the AggF, this result hampers the used of this model for further prediction process.</div>
+
+```{r}
+### Gráficos de contorno e superficie para rsm1
+par(mfrow = c(1,3))  # mfrow=c(nrows, ncols)
+contour(rsm100, ~x1 + x2, image = TRUE, xlabs = c("pH", "temp (ºC)"))
+contour(rsm100, ~x1 + x3, image = TRUE, xlabs = c("pH", "TEOSCTAB"))
+contour(rsm100, ~x2 + x3, image = TRUE, xlabs = c("temp (°C)", "TEOSCTAB"))
+persp(rsm100, ~x1 + x2, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "temp (ºC)"))
+persp(rsm100, ~x1 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("pH", "TEOSCTAB"))
+persp(rsm100, ~x2 + x3, zlab="ymed", col = terrain.colors(50), contours = ("colors"), xlabs = c("temp (°C)", "TEOSCTAB"))
+```
+
+# 8. Prediction and validation 
+
+## 8.1 Prediction {.tabset .tabset-fade}
+
+```{r}
+X1 <- c(V1 = 1.1, V2 = -0.90, V3 = -1.25, V4 = -0.20, V5 = -0.34, V6 = 1.2, V7 = -0.5)
+
+X2 <- c(V1 = -0.7, V2 = -1.20, V3 = -0.85, V4 = 0.50, V5 = 0.47, V6 = 0, V7 = 0.1)
+
+X3 <- c(V1 = -0.85, V2 = 0.80, V3 = -0.90, V4 = 0.80, V5 = -0.31, V6 = -0.3, V7 = 1.5)
+```
+
+### Median (nm)
+```{r}
+VAL_1 <- data.frame(X1, X2, X3)
+
+## MSN-V1 ## 
+V1 <- predict(rsm1, newdata = data.frame(x1= 1.1, x2 = -0.7, x3 = -0.85))
+
+## MSN-V2 ## 
+V2 <- predict(rsm1, newdata = data.frame(x1 = -0.90, x2 = -1.20, x3 = 0.80))
+
+## MSN-V3 ## 
+V3 <- predict(rsm1, newdata = data.frame(x1 = -1.25, x2 = -0.85, x3 = -0.90))
+
+## MSN-V4 ##
+V4 <- predict(rsm1, newdata = data.frame(x1 = -0.20, x2 = 0.50, x3 = 0.80))
+
+## MSN-V5 ## 
+V5 <- predict(rsm1, newdata = data.frame(x1 = -0.34, x2 = 0.47, x3 = -0.31))
+
+## MSN-V6 ##
+V6 <- predict(rsm1, newdata = data.frame(x1 = 1.2, x2 = 0, x3 = -0.3))
+
+## MSN-V7 ##
+V7 <- predict(rsm1, newdata = data.frame(x1 = -0.5, x2 = 0.1, x3 = 1.5))
+
+ymed_predict <- c(V1, V2, V3, V4, V5, V6, V7)
+VAL_1$ymed_predict <- ymed_predict
+```
+
+### Aggregation factor
+```{r}
+VAL_10 <- data.frame(X1, X2, X3)
+
+## MSN-V1 ## 
+V10 <- predict(rsm10, newdata = data.frame(x1 = 1.1, x2 = -0.7, x3 = -0.85))
+
+## MSN-V2 ## 
+V20 <- predict(rsm10, newdata = data.frame(x1 = -0.90, x2 = -1.20, x3 = 0.80))
+
+## MSN-V3 ## 
+V30 <- predict(rsm10, newdata = data.frame(x1 = -1.25, x2 = -0.85, x3 = -0.90))
+
+## MSN-V4 ##
+V40 <- predict(rsm10, newdata = data.frame(x1 = -0.20, x2 = 0.50, x3 = 0.80))
+
+## MSN-V5 ## 
+V50 <- predict(rsm10, newdata = data.frame(x1 = -0.34, x2 = 0.47, x3 = -0.31))
+
+## MSN-V6 ##
+V60 <- predict(rsm10, newdata = data.frame(x1 = 1.2, x2 = 0, x3 = -0.3))
+
+## MSN-V7 ##
+V70 <- predict(rsm10, newdata = data.frame(x1 = -0.5, x2 = 0.1, x3 = 1.5))
+
+yagg_predict <- c(V10, V20, V30, V40, V50, V60, V70)
+VAL_10$yagg_predict <- yagg_predict
+```
+
+### PDI width
+```{r}
+VAL_100 <- data.frame(X1, X2, X3)
+
+## MSN-V1 ## 
+V100 <- predict(rsm100, newdata = data.frame(x1 = 1.1, x2 = -0.7, x3 = -0.85))
+
+## MSN-V2 ## 
+V200 <- predict(rsm100, newdata = data.frame(x1 = -0.90, x2 = -1.20, x3 = 0.80))
+
+## MSN-V3 ## 
+V300 <- predict(rsm100, newdata = data.frame(x1 = -1.25, x2 = -0.85, x3 = -0.90))
+
+## MSN-V4 ##
+V400 <- predict(rsm100, newdata = data.frame(x1 = -0.20, x2 = 0.50, x3 = 0.80))
+
+## MSN-V5 ## 
+V500 <- predict(rsm100, newdata = data.frame(x1 = -0.34, x2 = 0.47, x3 = -0.31))
+
+## MSN-V6 ##
+V600 <- predict(rsm100, newdata = data.frame(x1 = 1.2, x2 = 0, x3 = -0.3))
+
+## MSN-V7 ##
+V700 <- predict(rsm100, newdata = data.frame(x1 = -0.5, x2 = 0.1, x3 = 1.5))
+
+
+ypdi_predict <- c(V100, V200, V300, V400, V500, V600, V700)
+VAL_100$ypdi_predict <- ypdi_predict
+```
+
+## 8.2 Validation test (answers) {.tabset .tabset-fade}
+
+### Median (nm)
+```{r}
+ymed_obs <- c(18.94, 37.59, 60.25, 89.64, 98.39, 22.55, 40.24) 
+VAL_1$ymed_obs <- ymed_obs
+VAL_1
+```
+
+### Aggregation factor
+```{r}
+yagg_obs <- c(56.30, 32.15, 28.43, 24.73, 21.63, 41.50, 596.44)
+VAL_10$yagg_obs <- yagg_obs
+VAL_10
+```
+
+### PDI width
+```{r}
+ypdi_obs <- c(14.11, 23.74, 23.83, 26.44, 22.75, 13.04, 74.99)
+VAL_100$ypdi_obs <- ypdi_obs
+VAL_100
+```
+
+## 8.3 Metrics {.tabset .tabset-fade}
+
+### Median (nm)
+```{r}
+postResample(VAL_1$ymed_obs, VAL_1$ymed_predict)
+```
+
+### Aggregation factor
+```{r}
+postResample(VAL_10$yagg_obs, VAL_10$yagg_predict)
+```
+
+### PDI width
+```{r}
+postResample(VAL_100$ypdi_obs, VAL_100$ypdi_predict)
+```
+
+## 8.4 Optimization
+
+### 8.4.1 Definition of the radius of the CCRD 
+```{r}
+raio <- (2^3)^0.25 # raio do CCD (alpha)
+```
+
+### 8.4.2 Escalada acentuada {.tabset .tabset-fade}
+
+#### Median (nm)
+```{r}
+otim1 <- steepest(rsm1, dist = seq(0, raio, by =.1), descent = F) # true = minimiza / False = maximiza
+otim1
+```
+
+#### Aggregation factor
+```{r}
+otim10 <- steepest(rsm10, dist = seq(0, raio, by =.1), descent = T) # true = minimiza / False = maximiza
+otim10
+```
+
+#### Median (nm)
+```{r}
+otim100 <- steepest(rsm100, dist = seq(0, raio, by =.1), descent = T) # true = minimiza / False = maximiza
+otim100
+```
+
+### 8.4.3 Escalada acentuada (plot) {.tabset .tabset-fade}
+
+#### Median (nm)
+```{r}
+par(mfrow = c(1,3))
+contour(rsm1, ~x1+x2, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x2 ~x1, data = otim1, col = "magenta", pch = "*")
+points(X2 ~X1, col = "green", pch = 19)
+
+contour(rsm1, ~x1+x3, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x3 ~x1, data = otim1, col = "magenta", pch = "*")
+points(X3 ~X1, col = "green", pch = 19)
+
+contour(rsm1, ~x2+x3, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x3 ~x2, data = otim1, col = "magenta", pch = "*")
+points(X3 ~X2, col = "green", pch = 19)
+```
+
+#### Aggregation factor
+```{r}
+par(mfrow = c(1,3))
+contour(rsm10, ~x1+x2, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x2 ~x1, data = otim10, col = "magenta", pch = "*")
+points(X2 ~X1, col = "green", pch = 19)
+
+contour(rsm10, ~x1+x3, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x3 ~x1, data = otim10, col = "magenta", pch = "*")
+points(X3 ~X1, col = "green", pch = 19)
+
+contour(rsm10, ~x2+x3, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x3 ~x2, data = otim10, col = "magenta", pch = "*")
+points(X3 ~X2, col = "green", pch = 19)
+```
+
+#### PDI width
+```{r}
+par(mfrow = c(1,3))
+contour(rsm100, ~x1+x2, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x2 ~x1, data = otim100, col = "magenta", pch = "*")
+points(X2 ~X1, col = "green", pch = 19)
+
+contour(rsm100, ~x1+x3, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x3 ~x1, data = otim100, col = "magenta", pch = "*")
+points(X3 ~X1, col = "green", pch = 19)
+
+contour(rsm100, ~x2+x3, col = "black", decode =F)
+points(c(-1,1,-1,1,-raio,raio,0,0,0), c(-1,-1,1,1,0,0,-raio,raio,0), col= "blue", pch = 19)
+points(x3 ~x2, data = otim100, col = "magenta", pch = "*")
+points(X3 ~X2, col = "green", pch = 19)
+```
+

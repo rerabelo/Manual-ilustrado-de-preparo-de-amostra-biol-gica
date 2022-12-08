@@ -1,0 +1,31 @@
+h1:cover Cover
+h1:summary Summary
+h1:introduction Introduction
+h1:document-structure Document structure
+h1:general General
+h1:x-ray-synchrotron-imaging X-ray synchrotron imaging
+h2:animal-adherent-cells Animal adherent cells
+h3:chemical-fixation Chemical fixation
+h4:materials Materials
+h4:procedures Procedures
+h4:security-cautions Security cautions
+h1:eletronic-microscopy Eletronic microscopy
+h1:concluding-remarks Concluding remarks
+h1:acknowledgements Acknowledgements
+h1:references References
+h1:cells Cells
+h2:animal-cells Animal cells
+h3:mammalian-cells Mammalian cells
+h3:adherent-mammalian-cells Adherent mammalian cells
+h3:non-adherent-mammalian-cells Non-adherent mammalian cells
+h2:vegetable-cells Vegetable cells
+h3:roots Roots
+h3:leaves Leaves
+h5:context-and-applications Context and applications
+h5:step-by-step Step-by-step
+h5:security-precautions Security precautions
+h4:representations Representations
+h3:animal-tissues Animal tissues
+h3:crustaceous-species Crustaceous species
+h4:daphnia Daphnia
+

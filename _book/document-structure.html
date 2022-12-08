@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Document structure | Sample preparation for image techniques</title>
+  <meta name="description" content="Document structure | Sample preparation for image techniques" />
+  <meta name="generator" content="bookdown 0.25 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Document structure | Sample preparation for image techniques" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Document structure | Sample preparation for image techniques" />
+  
+  
+  
+
+<meta name="author" content="LNLS - Brazilian Synchrotron Light Laboratory" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="introduction.html"/>
+<link rel="next" href="general.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Rationale Behind Synthesis Parameters to Predict MSNs size and aggregation</a></li>
+
+<li class="divider"></li>
+<li><a href="index.html#cover" id="toc-cover">Cover</a></li>
+<li><a href="summary.html#summary" id="toc-summary">Summary</a></li>
+<li><a href="introduction.html#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="document-structure.html#document-structure" id="toc-document-structure">Document structure</a></li>
+<li><a href="general.html#general" id="toc-general">General</a></li>
+<li><a href="x-ray-synchrotron-imaging.html#x-ray-synchrotron-imaging" id="toc-x-ray-synchrotron-imaging"><span class="toc-section-number">1</span> X-ray synchrotron imaging</a>
+<ul>
+<li><a href="x-ray-synchrotron-imaging.html#animal-adherent-cells" id="toc-animal-adherent-cells"><span class="toc-section-number">1.1</span> Animal adherent cells</a>
+<ul>
+<li><a href="x-ray-synchrotron-imaging.html#chemical-fixation" id="toc-chemical-fixation"><span class="toc-section-number">1.1.1</span> Chemical fixation</a></li>
+</ul></li>
+</ul></li>
+<li><a href="eletronic-microscopy.html#eletronic-microscopy" id="toc-eletronic-microscopy"><span class="toc-section-number">2</span> Eletronic microscopy</a></li>
+<li><a href="concluding-remarks.html#concluding-remarks" id="toc-concluding-remarks">Concluding remarks</a></li>
+<li><a href="acknowledgements.html#acknowledgements" id="toc-acknowledgements">Acknowledgements</a></li>
+<li><a href="references.html#references" id="toc-references">References</a></li>
+<li><a href="cells.html#cells" id="toc-cells"><span class="toc-section-number">3</span> Cells</a>
+<ul>
+<li><a href="cells.html#animal-cells" id="toc-animal-cells"><span class="toc-section-number">3.1</span> Animal cells</a>
+<ul>
+<li><a href="cells.html#mammalian-cells" id="toc-mammalian-cells"><span class="toc-section-number">3.1.1</span> Mammalian cells</a></li>
+<li><a href="cells.html#adherent-mammalian-cells" id="toc-adherent-mammalian-cells"><span class="toc-section-number">3.1.2</span> Adherent mammalian cells</a></li>
+<li><a href="cells.html#non-adherent-mammalian-cells" id="toc-non-adherent-mammalian-cells"><span class="toc-section-number">3.1.3</span> Non-adherent mammalian cells</a></li>
+</ul></li>
+<li><a href="cells.html#vegetable-cells" id="toc-vegetable-cells"><span class="toc-section-number">3.2</span> Vegetable cells</a>
+<ul>
+<li><a href="cells.html#roots" id="toc-roots"><span class="toc-section-number">3.2.1</span> Roots</a></li>
+<li><a href="cells.html#leaves" id="toc-leaves"><span class="toc-section-number">3.2.2</span> Leaves</a></li>
+<li><a href="cells.html#animal-tissues" id="toc-animal-tissues"><span class="toc-section-number">3.2.3</span> Animal tissues</a></li>
+<li><a href="cells.html#crustaceous-species" id="toc-crustaceous-species"><span class="toc-section-number">3.2.4</span> Crustaceous species</a></li>
+</ul></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Sample preparation for image techniques</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="document-structure" class="section level1 unnumbered hasAnchor">
+<h1>Document structure<a href="document-structure.html#document-structure" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="introduction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="general.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/index.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf", "_main.epub"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

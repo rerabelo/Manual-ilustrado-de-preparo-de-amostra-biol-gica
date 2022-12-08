@@ -1,0 +1,164 @@
+---
+title: "Sample preparation for image techniques"
+author: "LNLS - Brazilian Synchrotron Light Laboratory"
+site: bookdown::bookdown_site
+output:
+  html_document:
+    df_print: paged
+bibliography:
+- book.bib
+- packages.bib
+- Tsiapalis2019.bib
+- Jaeschke2021.bib
+- Finney2015.bib
+- Westneat2008.bib
+
+link-citations: yes
+github-repo: "rstudio/bookdown-demo"
+documentclass: book
+---
+::: {style="text-align: justify"}
+The structure of .....
+:::
+
+# Cover {.unnumbered}
+
+# Summary {.unnumbered}
+
+# Introduction {.unnumbered}
+
+# Document structure {.unnumbered}
+
+# General {.unnumbered}
+
+# X-ray synchrotron imaging
+```{=html}
+<style>
+body {text-align: justify}
+</style>
+```
+
+The seminal discovery of X-rays by Wilhelm Conrad Röntgenon on the nineteenth century had a greater impact on science and technology. There were contributions in a lot os fields, for example: material sciences, medicine and biological images. Research with X-rays experienced a stunning boost after the discovery
+of synchrotron radiation in 1946. At a synchrotron facility, electrons traveling near the speed of light are maintained in a storage ring by electromagnetic field. When the electrons are accelerated by changing the direction of travel, X-rays are emitted. [@Jaeschke2021]
+
+Imaging is the oldest application of X-rays since their discovery. The edge-enhancement effect is one of the key features of synchrotron imaging because it improves the sensitivity of imaging structures with only small density differences and absorption contrast.Compared with the laboratory-based X-ray sources, synchrotrons have the advantages of a wide energy range, a high photon flux, and good beam coherence. As a result this advantages permits faster acquisition of a large range of samples with different phase techniques e.g. X-ray nanoscopy or Coherent and Time-resolsed X-ray Scattering. [@Westneat2008]
+
+Side by side with the acquisition, the sample preparation protocols have a key importance in the technique. For a scientific hypothesis involving any specific chemical element, it will need a free-protocol of elements with the same or close excitation energy, if it uses any X-ray fluorescence technique, for example. If it chose to preserve some structure in biological samples, it would be necessary look at the fixation protocol  (e.g. chemical, cryo-fixation or freeze-substitution) and the drying process (e.g. air-drying, freeze-drying or work with frozen-hydrated samples).
+
+This chapter presents routine preparation protocols for samples that will be analyzed by synchrotron imaging techniques; check it out!
+
+## Animal adherent cells
+
+Adherent cells can adapt their cytoskeleton in response to elastic properties modifications in the extracellular matrix. This kind of cell, has an anchorage-dependency and is usually cultivate in a suitable substrate that provides specific conditions to the cells growth and spread. In the context of the animal cells, they can have different water composition and be able to growth better in some substrates. This properties are going to conduce the better technique to prepare the samples for x-ray microscopy data acquisition. See below the indicated preparation for these samples. [@Tsiapalis2019]
+
+### Chemical fixation
+
+This is the commonest technique which is used to prepare adherent cells for x-ray microscopy. In this case, is going to have chemical reticulation between a chosen compound and the samples. It can happen by chemical bond (covalent) or intermolecular forces (Van der Waalls, dipole-dipole or hydrogen bond). The method can be divided in five steps: a) sample pre-preparation (membranes, wash buffer and cell plating buffer), b) plating of cells, c) fixation of cells, d) dehydration and e) sample mouting and imaging. Next, the materials and the specific procedures were presented.Also, check it out the general/safety flowchart. 
+
+```{r echo=FALSE, fig.cap= 'Chemical fixation in animal adherent cells - general and safety flowchart'}
+knitr::include_graphics(rep("/Users/matheus/Documents/CNPEM_files_Matheus/Matheus_project_edit/images/Figure 1_Flowchart_overview.png", 1))
+```
+
+
+#### Materials {.unnumbered}
+
+-   Wash buffer (like tris-glucose, PIPES-sucrose, etc);
+-   Silicon nitride (SiN~3~) membrane;
+-   Cell-plating buffer (like D-PBS);
+-   Tweezers;
+-   Ultra-pure water;
+-   Ethanol (analytical grade) - absolute and 70% solution;
+-   Tape;
+-   Petri dishes;
+-   Poly-L-lysine 0.01%;
+-   Flow hood with UV lamp;
+-   Cells incubator;
+-   Invert light microscope;
+-   Fixation solution (it can use paraformaldehyde, formaldehyde, glutaraldehyde, etc);
+-   Micropipettes;
+-   Lint-free towels;
+-   Rubber grid mat (kind used in electron microscopy);
+-   Glass slide;
+-   Glue (like nail polish);
+-   Aluminum holder (beamline).
+
+#### Procedures {.unnumbered}
+
+**1. Buffers.** First of all, it start preparing the cell-plating buffer which depends the properties of the cell line in work, so check it out the specific literature and the seller instructions (for commercial cells line). Choose and prepare the wash buffer (Tris-glucose or PIPES-sucrose, for example) according with the samples and the experiment. It's recommended around 30mL per sample in this protocol. The composition of the buffer will may interfere the results at the beamline experiment. So, contact the LNLS team with this information.
+
+**2. Fixation solution.** Select the most adequate fixation solution for the sample based on the kind of reticulation expected. Fixation solutions with glutaraldehyde, for example, would do cross-link by covalent bond; formaldehyde in other hand is going to do reticulation only by intermolecular forces. The fixation solution usually starts by diluting of a commercial standard of the fixation compound in a buffer, to obtain the work concentration. Next, the pH is going to be adjusted for the work scale. Additional compounds would be introduce in the solution; it depends to the objectives. Paraformaldehyde, for example, is dilute in D-PBS buffer to concentration of 4% and the pH is adjust to 7.4 with acetic acid.
+
+**3. Silicon nitride membranes.** In this method, the samples are put in a silicon nitride membrane, which will be used at the beamline. There are different membrane thickness, like 50, 100 or 200nm. Consider all the procedures of the experimental mapping before choose the best thickness to your sample. The membranes usually are store in a capsule. First, open this capsule flatting with the fingers. Use thin tweezers to remove, carefully, the membrane from the capsule. Wash the membrane with ultra-pure water to 5min. Afterwards, wash with 70% ethanol to 2min and then with 100% ethanol to 2min and let it dry. In a Petri dish, on the bottom, adhere gently the membrane using a tape. Put the dish in a flow hood and turn on the UV lamp to 1 hour. Next, the membrane is going to be pre-coated. For that, keeping the sterile conditions, coat the sample with 10μL of Poly-L-lysine 0.01% and incubate for 1 hour, 37ºC, with the UV lamp turned on in the flow hood. The membranes is going to be sterile and coated.
+
+**4. Plating of cells.** Start passing the adherent cell line that was chosen (trypsinizing, scraping). Next, do the other necessary operations to be able to inoculate the cells. In the sterile and coated membranes at the flow hood gently add 10mL (proportion for 100mm Petri dish) of the adequate culture media for the cells. Cover the membranes with the media. Inoculate the prepared cell line in the mounted membranes. After that, incubate the dishes in the humidified incubator at 37ºC, with 5% CO~2~ to 24-72 hours. Using an invert microscope, monitor the cell confluence to 50-70%. Keep observing, occasionally, until the desired confluence.
+
+**5. Fixation of the cells.** When/ if the cells adequately grown remove the media by gently aspiration. Next, rinse the membranes with the solvent used to prepare the fixation solution. After that, cover the membrane with this solution. Hold 20 minutes and then remove the liquid. Cover the membranes with the chosen wash buffer,and immediately afterward remove the liquid. Add the wash buffer one more time. Carefully, tweeze the fixed tape around the membrane. Retrieve the membranes with some wash buffer. Then, when it is floating use the tweezers to pick up the membrane. Using a lint-free towels (like Kimwipes^®^), daub any excess of PIPES-sucrose from the edge of the membrane. Place the membrane in a rubber grid mat (kind used in electron microscopy) and let it dry.
+
+**6. Sample mounting and imaging.** If the sample dry completely, start mounting the membrane to the synchrotron facility. Be careful and fix the membrane in a glass slide from the grid mat, using a tape. Then, fix the slide on the bottom of a Petri dish. Shut down the dish with tape. Transport the packed dish to the synchrotron. In the beamline supporting remove the tape over the membrane with the tweezers, carefully. Then use a glue (like nail polish) to adhere the membrane on the beamline aluminum holder. Insert the sample in the x-ray microscope and use the specific beamline software to set up: area to scan, chosen resolution, dwell time and follow to acquire the scan. The raster-scan image is going be submitted for data analysis, which permits to get the reconstructed image.
+
+#### Security cautions {.unnumbered}
+
+**Reagents and buffer solutions.** Some of the reagents used in the preparation of the fixation solution and/or the buffers are potentially hazardous. Formaldehyde, for example, according to Regulation (EC) No 1272/2008 is a flammable liquid (category 3), presents acute toxicity category 3 (dermal and oral) and also is a carcinogenicity compound (category 1B). Other buffers/solutions composition, like in sodium cacodylate buffer (recommended to dilute glutaraldehyde for fixation solution) include heavy metals. It's necessary to work in strict safety conditions. The handling of any of the fixing agents must be performed in a fume hood. The weighing of any reagents which include heavy metals or other compounds with acute bioaccumulation must also be performed in a fume hood. The weighing inside the hood avoids dispersion of the chemical reagent and consequently contamination of the environment, the manipulator, and other users of the Chemical Laboratory. All and any procedure involving the handling of these reagents or solutions must occur on a surface lined with a layer of PVC film and two layers of paper towels. After the weighing, manipulations, and finished solutions, the papers and the PVC film should be discarded inside the hood, in a dedicated wastebasket. All other plastic material (tubes for example) used in the manipulation of this kind of substances should be discarded in the same way, except for sharp objects or material that can puncture the plastic bag (syringes, Pasteur pipettes (glass and plastic), needles, tips, etc) that should be discarded in a health care collector (kind Descarpack^®^).
+
+**Heavy metals waste.**The final solid waste collected in the dedicated wastebasket with two black bags should be tied and put in an orange bag (specific for chemical waste) and identified with a standard tag (see the example of a filled tag). As the same way the liquid waste should have an exclusive dispose; it'll be correctly identified either.
+
+**Laboratory glassware and accessories.** Any lab glassware which to be used to do or manipulate heavy metals should be exclusive. In some cases, it is necessary to work only with disposable material (working with osmium, for example).
+
+**Biological material.** It's necessary be careful to the kind of cell used in the study. Working in sterile conditions and biological security prevents the contamination of the cell line, but is specially important when the sample is intrinsically contaminated (infected cells, for example). For this, all the good biosafety practices should be follow: working in flow hood (clean and sterile with UV lamp), lab gloves, lab coat, and others Personal Protective Equipment (PPE), sterile material (glassware, lab accessories). Then, when the procedures with sample *in vivo* happened it is need to have an inactivation step. In a general way the chemical fixation already allows the inactivation of the sample.
+
+\cite{Tsiapalis2019} 
+\cite{Jaeschke2021}
+\cite{Westneat2008}
+\cite{Finney2015}
+
+# Eletronic microscopy
+
+# Concluding remarks {.unnumbered}
+
+# Acknowledgements {.unnumbered}
+
+# References{-} 
+
+::: {#refs}
+:::
+
+# Cells
+
+## Animal cells
+
+### Mammalian cells
+
+### Adherent mammalian cells
+
+<br>
+
+$x1 = (pH - 10)/1.2$
+
+$x2 = (Temperature - 80)/11.9$
+
+$x3 = ([TEOS]/[CTAB] - 1.4)/0.71$
+
+### Non-adherent mammalian cells
+
+## Vegetable cells
+
+### Roots
+
+### Leaves
+
+##### Context and applications
+
+##### Step-by-step
+
+##### Security precautions
+
+#### Representations
+
+### Animal tissues
+
+### Crustaceous species
+
+#### Daphnia
+
+
+

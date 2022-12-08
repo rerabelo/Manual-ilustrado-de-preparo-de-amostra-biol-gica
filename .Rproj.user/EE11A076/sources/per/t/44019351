@@ -1,0 +1,30 @@
+{
+    "id": "44019351",
+    "path": "~/Documents/CNPEM_files_Matheus/Matheus_project_edit/index.Rmd",
+    "project_path": "index.Rmd",
+    "type": "r_markdown",
+    "hash": "3183050251",
+    "contents": "",
+    "dirty": false,
+    "created": 1664320589843.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "22,0",
+        "scrollLine": "0",
+        "rmdVisualMode": "false",
+        "rmdVisualModeLocation": "10098:3757",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1660315473,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1660315473,
+    "read_only": false,
+    "read_only_alternatives": []
+}
